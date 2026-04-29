@@ -1,0 +1,3 @@
+date,signal,option,strike,entry_logged,entry_actual,exit_logged,exit_actual,result,pnl_logged,pnl_actual,notes
+2026-04-27,BUY,NIFTY26APR23900CE,23900,223.30,224.50,198.30,193.95,SL_HIT,-1774.50,-1985.75,Old strike logic - only 146 pts ITM - breakeven missed
+2026-04-28,SELL,NIFTY26APR24350PE,24350,249.10,251.65,329.10,329.10,TARGET_HIT,5258.50,5034.25,New strike logic - 238 pts ITM - breakeven triggered at 11:28
