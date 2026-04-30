@@ -24,6 +24,20 @@ class KiteAPI:
             "Authorization": f"token {api_key}:{access_token}"
         }
 
+    def get_profile(self) -> dict:
+        """
+        Get user profile to validate token.
+        Returns: {"status": "success", "data": {"user_name": "...", ...}} or error
+        """
+        url = f"{self.BASE_URL}/user/profile"
+
+        try:
+            response = requests.get(url, headers=self.headers)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Kite profile request failed: {e}")
+            return {"status": "error", "message": str(e)}
+
     def get_ltp(self, symbols: list) -> dict:
         """
         Get Last Traded Price for symbols.

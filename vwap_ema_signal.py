@@ -538,31 +538,72 @@ def main():
         access_token=access_token
     )
 
-    profile = fyers.get_profile()
-    if profile.get("s") == "ok":
-        logger.info(f"Logged in as: {profile.get('data', {}).get('name', 'Unknown')}")
-    else:
-        logger.warning(f"Could not fetch profile: {profile}")
-
     telegram = TelegramNotifier(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
 
-    trade_manager = None
+    # Validate Fyers token
+    fyers_valid = False
+    fyers_user = "Unknown"
+    profile = fyers.get_profile()
+    if profile.get("s") == "ok":
+        fyers_valid = True
+        fyers_user = profile.get('data', {}).get('name', 'Unknown')
+        logger.info(f"Fyers token valid - Logged in as: {fyers_user}")
+    else:
+        logger.error(f"Fyers token INVALID: {profile}")
+
+    # Validate Kite token (if trading enabled)
+    kite_valid = False
+    kite_user = "N/A"
     trading_enabled = os.getenv('TRADING_ENABLED', 'false').lower() == 'true'
 
     if trading_enabled:
         from kite_api import KiteAPI
-        from option_selector import OptionSelector
-        from trade_manager import TradeManager
 
         kite_api_key = os.getenv('KITE_API_KEY')
         kite_access_token = os.getenv('KITE_ACCESS_TOKEN')
 
-        if not kite_api_key or not kite_access_token:
-            logger.error("KITE_API_KEY and KITE_ACCESS_TOKEN required for trading")
-            return
+        if kite_api_key and kite_access_token:
+            kite_test = KiteAPI(api_key=kite_api_key, access_token=kite_access_token)
+            kite_profile = kite_test.get_profile()
+            if kite_profile.get("status") == "success":
+                kite_valid = True
+                kite_user = kite_profile.get('data', {}).get('user_name', 'Unknown')
+                logger.info(f"Kite token valid - Logged in as: {kite_user}")
+            else:
+                logger.error(f"Kite token INVALID: {kite_profile}")
+        else:
+            logger.error("KITE_API_KEY or KITE_ACCESS_TOKEN missing")
 
-        kite = KiteAPI(api_key=kite_api_key, access_token=kite_access_token)
-        logger.info("Kite Connect initialized for order execution")
+    # Send startup message with token status
+    now = datetime.now()
+    fyers_status = f"✅ Valid ({fyers_user})" if fyers_valid else "❌ INVALID"
+    kite_status = f"✅ Valid ({kite_user})" if kite_valid else ("❌ INVALID" if trading_enabled else "⏸️ Disabled")
+
+    startup_message = (
+        f"🚀 <b>Bot Started</b>\n\n"
+        f"📅 {now.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        f"<b>Token Status:</b>\n"
+        f"• Fyers: {fyers_status}\n"
+        f"• Kite: {kite_status}\n\n"
+    )
+
+    if not fyers_valid or (trading_enabled and not kite_valid):
+        startup_message += "⚠️ <b>ACTION REQUIRED:</b> Update expired tokens!"
+        telegram.send_message(startup_message)
+        logger.error("Token validation failed. Exiting.")
+        return
+
+    startup_message += "✅ All tokens valid. Waiting for market hours..."
+    telegram.send_message(startup_message)
+    logger.info("Token validation successful")
+
+    trade_manager = None
+
+    if trading_enabled:
+        from option_selector import OptionSelector
+        from trade_manager import TradeManager
+
+        kite = kite_test  # Reuse validated Kite instance
 
         trading_config = {
             'paper_trading': os.getenv('PAPER_TRADING', 'true').lower() == 'true',
