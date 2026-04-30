@@ -540,62 +540,115 @@ def main():
 
     telegram = TelegramNotifier(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
 
-    # Validate Fyers token
-    fyers_valid = False
-    fyers_user = "Unknown"
-    profile = fyers.get_profile()
-    if profile.get("s") == "ok":
-        fyers_valid = True
-        fyers_user = profile.get('data', {}).get('name', 'Unknown')
-        logger.info(f"Fyers token valid - Logged in as: {fyers_user}")
-    else:
-        logger.error(f"Fyers token INVALID: {profile}")
-
-    # Validate Kite token (if trading enabled)
-    kite_valid = False
-    kite_user = "N/A"
     trading_enabled = os.getenv('TRADING_ENABLED', 'false').lower() == 'true'
+    kite_api_key = os.getenv('KITE_API_KEY')
+    kite_access_token_env = os.getenv('KITE_ACCESS_TOKEN')
 
     if trading_enabled:
         from kite_api import KiteAPI
 
-        kite_api_key = os.getenv('KITE_API_KEY')
-        kite_access_token = os.getenv('KITE_ACCESS_TOKEN')
+    def validate_tokens():
+        """Validate Fyers and Kite tokens. Returns (fyers_valid, kite_valid, fyers_user, kite_user, kite_instance)"""
+        fyers_valid = False
+        fyers_user = "Unknown"
+        kite_valid = False
+        kite_user = "N/A"
+        kite_instance = None
 
-        if kite_api_key and kite_access_token:
-            kite_test = KiteAPI(api_key=kite_api_key, access_token=kite_access_token)
-            kite_profile = kite_test.get_profile()
-            if kite_profile.get("status") == "success":
-                kite_valid = True
-                kite_user = kite_profile.get('data', {}).get('user_name', 'Unknown')
-                logger.info(f"Kite token valid - Logged in as: {kite_user}")
-            else:
-                logger.error(f"Kite token INVALID: {kite_profile}")
+        # Reload config to get fresh tokens
+        load_dotenv('config.env', override=True)
+        fresh_fyers_token = os.getenv('FYERS_ACCESS_TOKEN')
+        fresh_kite_token = os.getenv('KITE_ACCESS_TOKEN')
+
+        # Update Fyers client with fresh token
+        fyers.access_token = fresh_fyers_token
+        fyers.headers["Authorization"] = f"{fyers.client_id}:{fresh_fyers_token}"
+
+        # Validate Fyers
+        profile = fyers.get_profile()
+        if profile.get("s") == "ok":
+            fyers_valid = True
+            fyers_user = profile.get('data', {}).get('name', 'Unknown')
+            logger.info(f"Fyers token valid - Logged in as: {fyers_user}")
         else:
-            logger.error("KITE_API_KEY or KITE_ACCESS_TOKEN missing")
+            logger.error(f"Fyers token INVALID: {profile}")
 
-    # Send startup message with token status
-    now = datetime.now()
-    fyers_status = f"✅ Valid ({fyers_user})" if fyers_valid else "❌ INVALID"
-    kite_status = f"✅ Valid ({kite_user})" if kite_valid else ("❌ INVALID" if trading_enabled else "⏸️ Disabled")
+        # Validate Kite (if trading enabled)
+        if trading_enabled:
+            if kite_api_key and fresh_kite_token:
+                kite_instance = KiteAPI(api_key=kite_api_key, access_token=fresh_kite_token)
+                kite_profile = kite_instance.get_profile()
+                if kite_profile.get("status") == "success":
+                    kite_valid = True
+                    kite_user = kite_profile.get('data', {}).get('user_name', 'Unknown')
+                    logger.info(f"Kite token valid - Logged in as: {kite_user}")
+                else:
+                    logger.error(f"Kite token INVALID: {kite_profile}")
+            else:
+                logger.error("KITE_API_KEY or KITE_ACCESS_TOKEN missing")
 
-    startup_message = (
-        f"🚀 <b>Bot Started</b>\n\n"
-        f"📅 {now.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        f"<b>Token Status:</b>\n"
-        f"• Fyers: {fyers_status}\n"
-        f"• Kite: {kite_status}\n\n"
-    )
+        return fyers_valid, kite_valid, fyers_user, kite_user, kite_instance
 
-    if not fyers_valid or (trading_enabled and not kite_valid):
-        startup_message += "⚠️ <b>ACTION REQUIRED:</b> Update expired tokens!"
-        telegram.send_message(startup_message)
-        logger.error("Token validation failed. Exiting.")
-        return
+    # Token validation with retry until 9:20 AM
+    retry_deadline = datetime.now().replace(hour=9, minute=20, second=0, microsecond=0)
+    retry_interval = 120  # 2 minutes
+    alert_sent = False
+    kite_test = None
 
-    startup_message += "✅ All tokens valid. Waiting for market hours..."
-    telegram.send_message(startup_message)
-    logger.info("Token validation successful")
+    while True:
+        fyers_valid, kite_valid, fyers_user, kite_user, kite_test = validate_tokens()
+        now = datetime.now()
+
+        tokens_ok = fyers_valid and (kite_valid or not trading_enabled)
+
+        if tokens_ok:
+            # Tokens valid - send success message and continue
+            startup_message = (
+                f"🚀 <b>Bot Started</b>\n\n"
+                f"📅 {now.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                f"<b>Token Status:</b>\n"
+                f"• Fyers: ✅ Valid ({fyers_user})\n"
+                f"• Kite: {'✅ Valid (' + kite_user + ')' if kite_valid else '⏸️ Disabled'}\n\n"
+                f"✅ All tokens valid. Waiting for market hours..."
+            )
+            telegram.send_message(startup_message)
+            logger.info("Token validation successful")
+            break
+
+        # Tokens invalid
+        fyers_status = f"✅ Valid ({fyers_user})" if fyers_valid else "❌ INVALID"
+        kite_status = f"✅ Valid ({kite_user})" if kite_valid else ("❌ INVALID" if trading_enabled else "⏸️ Disabled")
+
+        if now >= retry_deadline:
+            # Past 9:20 - give up
+            final_message = (
+                f"🚀 <b>Bot Started</b>\n\n"
+                f"📅 {now.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                f"<b>Token Status:</b>\n"
+                f"• Fyers: {fyers_status}\n"
+                f"• Kite: {kite_status}\n\n"
+                f"❌ <b>FAILED:</b> Tokens still invalid after retries. Exiting."
+            )
+            telegram.send_message(final_message)
+            logger.error("Token validation failed after retries. Exiting.")
+            return
+
+        # Send alert on first failure only
+        if not alert_sent:
+            alert_message = (
+                f"🚀 <b>Bot Started</b>\n\n"
+                f"📅 {now.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                f"<b>Token Status:</b>\n"
+                f"• Fyers: {fyers_status}\n"
+                f"• Kite: {kite_status}\n\n"
+                f"⚠️ <b>ACTION REQUIRED:</b> Update tokens before 9:20 AM!\n"
+                f"Retrying every 2 minutes..."
+            )
+            telegram.send_message(alert_message)
+            alert_sent = True
+
+        logger.info(f"Token validation failed. Retrying in {retry_interval} seconds (until 9:20 AM)...")
+        time.sleep(retry_interval)
 
     trade_manager = None
 
