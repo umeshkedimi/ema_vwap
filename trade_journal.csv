@@ -4,3 +4,4 @@ date,signal,option,strike,entry_logged,entry_actual,exit_logged,exit_actual,resu
 2026-04-30,SELL,NIFTY2650524100PE,24100,309.00,307.65,389.15,388.00,TARGET_HIT,5209.75,5222.75,Historical-only scan - breakeven at 10:09 - target at 10:56
 2026-05-04,BUY,NIFTY2650524100CE,24100,245.65,246.33,219.65,221.30,SL_HIT,-6760.00,-6507.80,First 4-lot trade - SL hit in 14 min - no breakeven trigger
 2026-05-05,SELL,NIFTY2650524250PE,24250,253.25,253.15,333.40,333.01,TARGET_HIT,20969.00,20763.60,Same-day expiry - deeper ITM for premium - breakeven at 10:28 - target at 10:56
+2026-05-06,BUY,NIFTY2651223950CE,23950,350.65,350.53,430.65,428.80,TARGET_HIT,20982.00,20350.20,Late signal 14:15 - breakeven in 6 min - target in 7 min - fastest trade
