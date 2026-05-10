@@ -6,3 +6,4 @@ date,signal,option,strike,entry_logged,entry_actual,exit_logged,exit_actual,resu
 2026-05-05,SELL,NIFTY2650524250PE,24250,253.25,253.15,333.40,333.01,TARGET_HIT,20969.00,20763.60,Same-day expiry - deeper ITM for premium - breakeven at 10:28 - target at 10:56
 2026-05-06,BUY,NIFTY2651223950CE,23950,350.65,350.53,430.65,428.80,TARGET_HIT,20982.00,20350.20,Late signal 14:15 - breakeven in 6 min - target in 7 min - fastest trade
 2026-05-07,BUY,NIFTY2651224200CE,24200,286.20,286.30,261.20,260.10,SL_HIT,-6812.00,-6812.00,Thin crossover +0.02 pts - choppy market - whipsaw signals
+2026-05-08,SELL,NIFTY2651224350PE,24350,270.00,270.85,245.00,244.10,SL_HIT,-6591.00,-6955.00,Quick SL hit in 12 min - no breakeven trigger
