@@ -7,3 +7,4 @@ date,signal,option,strike,entry_logged,entry_actual,exit_logged,exit_actual,resu
 2026-05-06,BUY,NIFTY2651223950CE,23950,350.65,350.53,430.65,428.80,TARGET_HIT,20982.00,20350.20,Late signal 14:15 - breakeven in 6 min - target in 7 min - fastest trade
 2026-05-07,BUY,NIFTY2651224200CE,24200,286.20,286.30,261.20,260.10,SL_HIT,-6812.00,-6812.00,Thin crossover +0.02 pts - choppy market - whipsaw signals
 2026-05-08,SELL,NIFTY2651224350PE,24350,270.00,270.85,245.00,244.10,SL_HIT,-6591.00,-6955.00,Quick SL hit in 12 min - no breakeven trigger
+2026-05-11,SELL,NIFTY2651224050PE,24050,223.85,223.16,198.85,198.33,SL_HIT,-6838.00,-6455.80,70 min trade - 3rd consecutive loss
