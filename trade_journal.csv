@@ -11,3 +11,4 @@ date,signal,option,strike,entry_logged,entry_actual,exit_logged,exit_actual,resu
 2026-05-12,SELL,NIFTY2651223900PE,23900,265.40,266.36,240.40,238.10,SL_HIT,-6942.00,-7347.60,Same-day expiry - 4th consecutive loss - higher slippage
 2026-05-13,BUY,NIFTY2651923250CE,23250,354.20,355.23,354.20,353.86,BREAKEVEN,-91.00,-356.20,Breakeven triggered at 10:34 - saved ~₹6500 loss - streak broken
 2026-05-14,BUY,NIFTY2651923400CE,23400,305.40,304.98,385.40,384.02,TARGET_HIT,20813.00,20550.40,Delta mode 167 ITM - breakeven at 11:41 - target in 15 min
+2026-05-15,BUY,NIFTY2651923600CE,23600,289.35,287.15,260.40,260.65,SL_HIT,-7527.00,-6890.00,First candle signal - SL hit in 5 min - no breakeven trigger
