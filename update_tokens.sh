@@ -2,8 +2,8 @@
 # Token Update Script for EMA-VWAP Trading Bot
 # Run this from your Mac before 9 AM daily
 
-SERVER="root@64.227.163.187"
-SSH_KEY="~/.ssh/id_ed25519_ai_dev"
+SERVER="root@YOUR_SERVER_IP"
+SSH_KEY="~/.ssh/YOUR_SSH_KEY"
 CONFIG_PATH="/root/ema_vwap/config.env"
 
 echo "=========================================="
@@ -13,7 +13,7 @@ echo ""
 
 # Get Fyers token
 echo "1. Login to Fyers and get access token"
-echo "   URL: https://api-t1.fyers.in/api/v3/generate-authcode?client_id=O175VKW4UD-200&redirect_uri=https://trade.fyers.in/api-login/redirect-uri/index.html&response_type=code&state=sample_state"
+echo "   URL: https://api-t1.fyers.in/api/v3/generate-authcode?client_id=YOUR_FYERS_APP_ID&redirect_uri=https://trade.fyers.in/api-login/redirect-uri/index.html&response_type=code&state=sample_state"
 echo ""
 read -p "Paste FYERS access token: " FYERS_TOKEN
 echo ""
