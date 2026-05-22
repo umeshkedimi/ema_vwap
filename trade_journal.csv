@@ -15,3 +15,4 @@ date,signal,option,strike,entry_logged,entry_actual,exit_logged,exit_actual,resu
 2026-05-18,SELL,NIFTY2651923550PE,23550,251.90,251.90,226.50,227.20,SL_HIT,-8255.00,-8027.50,5 lots - deeper ITM for premium - SL hit in 27 min
 2026-05-19,BUY,NIFTY2651923500CE,23500,257.20,258.10,230.45,231.11,SL_HIT,-8693.75,-8771.75,Same-day expiry - SL hit in 5 min - 5 lots
 2026-05-21,BUY,NIFTY26MAY23650CE,23650,267.90,268.20,241.75,240.85,SL_HIT,-8498.75,-8888.75,Monthly expiry - SL hit in 5 min - 4th consecutive loss at 5 lots
+2026-05-22,BUY,NIFTY26MAY23600CE,23600,267.65,268.28,242.55,242.57,SL_HIT,-8157.50,-8355.75,Monthly expiry - SL hit in 6 min - 5th consecutive loss at 5 lots
