@@ -16,3 +16,4 @@ date,signal,option,strike,entry_logged,entry_actual,exit_logged,exit_actual,resu
 2026-05-19,BUY,NIFTY2651923500CE,23500,257.20,258.10,230.45,231.11,SL_HIT,-8693.75,-8771.75,Same-day expiry - SL hit in 5 min - 5 lots
 2026-05-21,BUY,NIFTY26MAY23650CE,23650,267.90,268.20,241.75,240.85,SL_HIT,-8498.75,-8888.75,Monthly expiry - SL hit in 5 min - 4th consecutive loss at 5 lots
 2026-05-22,BUY,NIFTY26MAY23600CE,23600,267.65,268.28,242.55,242.57,SL_HIT,-8157.50,-8355.75,Monthly expiry - SL hit in 6 min - 5th consecutive loss at 5 lots
+2026-05-25,BUY,NIFTY26MAY23750CE,23750,260.40,261.40,235.30,234.02,SL_HIT,-8157.50,-8898.50,Monthly expiry - 2hr trade - 6th consecutive loss at 5 lots
