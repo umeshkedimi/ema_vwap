@@ -18,3 +18,4 @@ date,signal,option,strike,entry_logged,entry_actual,exit_logged,exit_actual,resu
 2026-05-22,BUY,NIFTY26MAY23600CE,23600,267.65,268.28,242.55,242.57,SL_HIT,-8157.50,-8355.75,Monthly expiry - SL hit in 6 min - 5th consecutive loss at 5 lots
 2026-05-25,BUY,NIFTY26MAY23750CE,23750,260.40,261.40,235.30,234.02,SL_HIT,-8157.50,-8898.50,Monthly expiry - 2hr trade - 6th consecutive loss at 5 lots
 2026-05-26,SELL,NIFTY26MAY24300PE,24300,268.40,269.13,348.85,347.09,TARGET_HIT,26146.25,25337.00,Same-day monthly expiry - breakeven at 12:50 - target at 13:44 - streak broken!
+2026-05-27,SELL,NIFTY2660224050PE,24050,251.05,250.50,225.75,225.70,SL_HIT,-8222.50,-8060.00,Weekly expiry Jun 2 - SL hit in 8 min
