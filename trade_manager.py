@@ -239,10 +239,10 @@ class TradeManager:
                 f"Option: NIFTY {trade.strike} {trade.option_type}\n"
                 f"LTP: {current_price:.2f} (+{self.BREAKEVEN_TRIGGER_POINTS:.0f} triggered)\n"
                 f"New SL: {trade.stoploss_price:.2f} (entry)\n"
-                f"Trailing starts at: +100 pts"
+                f"Trailing starts at: +75 pts"
             )
 
-        if current_profit >= 100:
+        if current_profit >= 75:
             new_trailing_level = int((current_profit // 25) * 25)
             if new_trailing_level > trade.trailing_sl_level:
                 trade.trailing_sl_level = new_trailing_level
@@ -406,7 +406,7 @@ class TradeManager:
             f"Entry: {trade.entry_price:.2f}\n"
             f"SL: {trade.stoploss_price:.2f} (-{self.config['stoploss_points']})\n"
             f"BE Trigger: +{self.BREAKEVEN_TRIGGER_POINTS} pts\n"
-            f"Trail starts: +100 pts (then every 25)\n"
+            f"Trail starts: +75 pts (then every 25)\n"
             f"Qty: {trade.quantity}\n\n"
             f"Mode: {mode}"
         )
