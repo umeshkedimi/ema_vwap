@@ -8,13 +8,24 @@ Automated trading bot for Nifty options based on 5 EMA crossing VWAP on 5-minute
 - **BUY**: When 5 EMA crosses above VWAP → Buy CE (Call) option
 - **SELL**: When 5 EMA crosses below VWAP → Buy PE (Put) option
 
-**Exit Rules:**
-- **Target**: +80 points from entry
+**Exit Rules (Trailing SL):**
 - **Stop Loss**: -25 points from entry
-- **Breakeven**: When trade reaches +50 points, SL moves to entry price
+- **Breakeven**: At +50 pts, SL moves to entry (0)
+- **Trailing SL**: At +75 pts, SL moves to +50, then trails every 25 pts
+- **No fixed target**: Winners run until trailing SL is hit
 - **Force Close**: 3:15 PM if still open
 
-**Risk/Reward**: 3.2:1 (need only ~24% win rate to break even)
+```
+SL Progression:
+Entry → SL at -25
++50 pts → SL moves to 0 (breakeven)
++75 pts → SL moves to +50 (lock 50)
++100 pts → SL moves to +75 (lock 75)
++125 pts → SL moves to +100 (lock 100)
+... trails every 25 pts
+```
+
+**Philosophy**: Cut losses early (-25), let winners run (trailing SL). Inspired by Tom Hougaard's "Best Loser Wins".
 
 ## Architecture
 
@@ -81,10 +92,9 @@ TRADE_START_TIME=09:30  # No trades before this (skip first 15 min)
 TRADE_END_TIME=14:30    # No trades after this
 
 # Trade parameters
-MAX_TRADES_PER_DAY=1    # Maximum trades per day
-TARGET_POINTS=80        # Exit at +80 points
-STOPLOSS_POINTS=25      # Exit at -25 points
-LOT_SIZE=325            # Quantity (1 lot = 65)
+MAX_TRADES_PER_DAY=2    # Max 2 trades per day
+STOPLOSS_POINTS=25      # Initial SL at -25 points
+LOT_SIZE=130            # Quantity (1 lot = 65)
 
 # Strike selection
 STRIKE_MODE=delta       # delta or premium
@@ -96,9 +106,10 @@ ITM_OFFSET_FOR_DELTA=150  # ITM points for delta mode
 
 1. **Timing**: No trades before 9:30 AM or after 2:30 PM
 2. **One at a time**: Must close current trade before taking next signal
-3. **Daily limit**: Configurable max trades per day
-4. **Target rule**: If first trade hits target, no more trades that day
-5. **Expiry**: Weekly options (Tuesday expiry)
+3. **Daily limit**: Max 2 trades per day
+4. **Profit rule**: If first trade exits with profit (via trailing SL), no second trade
+5. **Loss/BE rule**: If first trade hits SL or breakeven, second trade allowed
+6. **Expiry**: Weekly options (Tuesday expiry)
 
 ## Option Symbol Formats
 
@@ -141,9 +152,22 @@ The bot sends alerts for:
 - Every candle scan (EMA/VWAP values)
 - Signal detection
 - Trade entry with option details
-- Breakeven trigger
-- Trade exit (target/SL/breakeven)
+- Breakeven trigger (+50 pts)
+- Trailing SL updates (+75, +100, +125... pts)
+- Trade exit (trailing SL/SL/breakeven)
 - Daily summary
+
+## Version History
+
+### v2.0 (June 2026) - Trailing SL
+- Replaced fixed +80 target with trailing SL starting at +75
+- Added 2 trades per day (2nd trade only if 1st loses or breaks even)
+- Philosophy: Cut losses early, let winners run
+
+### v1.0 (April 2026) - Initial Release
+- Fixed target +80, SL -25, breakeven at +50
+- 1 trade per day
+- Delta mode strike selection
 
 ## Disclaimer
 
