@@ -348,13 +348,20 @@ class TradeManager:
             current_price = self._get_option_price(trade.tradingsymbol)
             if current_price:
                 unrealized_pnl = (current_price - trade.entry_price) * trade.quantity
+                current_profit = current_price - trade.entry_price
                 pnl_sign = "+" if unrealized_pnl >= 0 else ""
-                sl_status = "(BE)" if trade.sl_at_breakeven else ""
+                if trade.trailing_sl_level > 0:
+                    next_trail = trade.trailing_sl_level + 25
+                    trail_info = f"Trail: +{next_trail:.0f}"
+                elif trade.sl_at_breakeven:
+                    trail_info = "Trail: +75"
+                else:
+                    trail_info = "BE: +50"
                 return (
                     f"Status [{now}]\n"
                     f"OPEN: {trade.strike} {trade.option_type}\n"
                     f"Entry: {trade.entry_price:.2f} | LTP: {current_price:.2f}\n"
-                    f"SL: {trade.stoploss_price:.2f} {sl_status} | Target: {trade.target_price:.2f}\n"
+                    f"SL: {trade.stoploss_price:.2f} | {trail_info}\n"
                     f"Unrealized: {pnl_sign}{unrealized_pnl:.2f}"
                 )
             else:

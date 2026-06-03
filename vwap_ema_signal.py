@@ -436,8 +436,8 @@ class VWAPEMASignalBot:
             trading_info = (
                 f"\n\nTrading: ENABLED ({mode})\n"
                 f"Max Trades: {self.trade_manager.config['max_trades_per_day']}/day\n"
-                f"Target: +{self.trade_manager.config['target_points']} pts\n"
-                f"SL: -{self.trade_manager.config['stoploss_points']} pts"
+                f"SL: -{self.trade_manager.config['stoploss_points']} pts\n"
+                f"Trail: +75 pts (then every 25)"
             )
         else:
             trading_info = "\n\nTrading: DISABLED (signals only)"
