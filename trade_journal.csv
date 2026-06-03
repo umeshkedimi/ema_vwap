@@ -22,3 +22,4 @@ date,signal,option,strike,entry_logged,entry_actual,exit_logged,exit_actual,resu
 2026-05-29,BUY,NIFTY2660223750CE,23750,298.60,299.32,273.50,273.00,SL_HIT,-8157.50,-8554.00,Weekly expiry Jun 2 - SL hit in 14 min
 2026-06-01,BUY,NIFTY2660223450CE,23450,227.25,227.23,201.15,200.07,SL_HIT,-8482.50,-8827.00,Weekly expiry Jun 2 - SL hit in 12 min
 2026-06-02,SELL,NIFTY2660223550PE,23550,263.55,264.28,237.60,238.15,SL_HIT,-8433.75,-8492.25,Same-day expiry - SL hit in 33 min - 4th consecutive loss
+2026-06-03,SELL,NIFTY2660923450PE,23450,286.00,287.00,336.00,334.80,TRAILING_SL,6500.00,6214.00,v2.0 first trade - trailing exit at +50 locked - ran 2.5 hrs - streak broken!
