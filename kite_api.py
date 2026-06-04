@@ -5,6 +5,7 @@ Handles quotes, order placement, and position tracking.
 """
 
 import logging
+import time
 import requests
 from typing import Optional
 
@@ -216,8 +217,6 @@ class KiteAPI:
         Retries until order is COMPLETE or max retries reached.
         Returns: average_price if filled, None otherwise
         """
-        import time
-
         for i in range(max_retries):
             history = self.get_order_history(order_id)
             if history:
