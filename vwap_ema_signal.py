@@ -496,6 +496,10 @@ class VWAPEMASignalBot:
 
         logger.info("Market hours ended. Shutting down.")
 
+        # Force close any open position before shutdown
+        if self.trade_manager:
+            self.trade_manager.force_close_all_positions()
+
         if self.trade_manager:
             summary = self.trade_manager.get_daily_summary()
             self.telegram.send_message(f"🏁 <b>Session Ended</b>\n\n{summary}")
