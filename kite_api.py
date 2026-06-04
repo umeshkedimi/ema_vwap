@@ -209,3 +209,28 @@ class KiteAPI:
         except Exception as e:
             logger.error(f"Order history request failed: {e}")
             return []
+
+    def get_fill_price(self, order_id: str, max_retries: int = 5) -> Optional[float]:
+        """
+        Get the actual fill price for an order.
+        Retries until order is COMPLETE or max retries reached.
+        Returns: average_price if filled, None otherwise
+        """
+        import time
+
+        for i in range(max_retries):
+            history = self.get_order_history(order_id)
+            if history:
+                # Get the latest state (last item in history)
+                latest = history[-1]
+                if latest.get('status') == 'COMPLETE':
+                    avg_price = latest.get('average_price')
+                    logger.info(f"Order {order_id} filled at {avg_price}")
+                    return avg_price
+                elif latest.get('status') in ['REJECTED', 'CANCELLED']:
+                    logger.error(f"Order {order_id} {latest.get('status')}: {latest.get('status_message')}")
+                    return None
+            time.sleep(0.5)  # Wait before retry
+
+        logger.warning(f"Order {order_id} not filled after {max_retries} retries")
+        return None

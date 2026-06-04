@@ -196,6 +196,16 @@ class TradeManager:
             if response.get('status') == 'success':
                 trade.order_id = response.get('data', {}).get('order_id')
                 logger.info(f"Kite order placed: {trade.order_id}")
+
+                # Get actual fill price and update trade
+                actual_price = self.kite.get_fill_price(trade.order_id)
+                if actual_price:
+                    old_price = trade.entry_price
+                    trade.entry_price = actual_price
+                    trade.target_price = actual_price + self.config['target_points']
+                    trade.stoploss_price = max(actual_price - self.config['stoploss_points'], 1)
+                    logger.info(f"Entry price updated: {old_price:.2f} -> {actual_price:.2f} (actual fill)")
+
                 return True
             else:
                 error_msg = response.get('message', 'Unknown error')
@@ -273,13 +283,18 @@ class TradeManager:
 
     def _close_trade(self, trade: Trade, exit_price: float, status: TradeStatus):
         """Close a trade with given status."""
-        trade.exit_price = exit_price
-        trade.exit_time = datetime.now()
-        trade.status = status
-        trade.pnl = (exit_price - trade.entry_price) * trade.quantity
+        actual_exit_price = exit_price  # Default to LTP
 
         if not self.config['paper_trading']:
-            self._execute_exit(trade)
+            actual_fill = self._execute_exit(trade)
+            if actual_fill:
+                actual_exit_price = actual_fill
+                logger.info(f"Exit price updated: {exit_price:.2f} -> {actual_fill:.2f} (actual fill)")
+
+        trade.exit_price = actual_exit_price
+        trade.exit_time = datetime.now()
+        trade.status = status
+        trade.pnl = (actual_exit_price - trade.entry_price) * trade.quantity
 
         if trade.pnl > 0 and self.daily_state.trades_executed == 1:
             self.daily_state.first_trade_profit_exit = True
@@ -298,27 +313,32 @@ class TradeManager:
         if trade.status != TradeStatus.OPEN:
             return
 
-        current_price = self._get_option_price(trade.tradingsymbol)
-        if current_price is None:
-            current_price = trade.entry_price
+        # Get LTP as fallback
+        exit_price = self._get_option_price(trade.tradingsymbol)
+        if exit_price is None:
+            exit_price = trade.entry_price
             logger.warning(f"Could not get exit price, using entry price")
 
-        trade.exit_price = current_price
+        # Execute exit and get actual fill price
+        if not self.config['paper_trading']:
+            actual_fill = self._execute_exit(trade)
+            if actual_fill:
+                exit_price = actual_fill
+                logger.info(f"Force close actual fill: {actual_fill:.2f}")
+
+        trade.exit_price = exit_price
         trade.exit_time = datetime.now()
         trade.status = TradeStatus.CLOSED
-        trade.pnl = (current_price - trade.entry_price) * trade.quantity
+        trade.pnl = (exit_price - trade.entry_price) * trade.quantity
 
-        if not self.config['paper_trading']:
-            self._execute_exit(trade)
-
-        points = current_price - trade.entry_price
+        points = exit_price - trade.entry_price
         pnl_sign = "+" if trade.pnl >= 0 else ""
 
         message = (
             f"POSITION SQUARED OFF (3:15 PM)\n\n"
             f"Option: NIFTY {trade.strike} {trade.option_type}\n"
             f"Entry: {trade.entry_price:.2f}\n"
-            f"Exit: {current_price:.2f}\n"
+            f"Exit: {exit_price:.2f}\n"
             f"P&L: {pnl_sign}{trade.pnl:.2f} ({points:+.2f} x {trade.quantity})"
         )
         self.telegram.send_message(message)
@@ -376,8 +396,8 @@ class TradeManager:
                 f"Day P&L: {pnl_str}"
             )
 
-    def _execute_exit(self, trade: Trade) -> bool:
-        """Execute exit order via Kite Connect."""
+    def _execute_exit(self, trade: Trade) -> Optional[float]:
+        """Execute exit order via Kite Connect. Returns actual fill price or None."""
         try:
             response = self.kite.place_order(
                 tradingsymbol=trade.tradingsymbol,
@@ -393,13 +413,19 @@ class TradeManager:
             if response.get('status') == 'success':
                 trade.exit_order_id = response.get('data', {}).get('order_id')
                 logger.info(f"Exit order placed: {trade.exit_order_id}")
-                return True
+
+                # Get actual fill price
+                actual_price = self.kite.get_fill_price(trade.exit_order_id)
+                if actual_price:
+                    logger.info(f"Exit fill price: {actual_price:.2f}")
+                    return actual_price
+                return None
             else:
                 logger.error(f"Exit order failed: {response}")
-                return False
+                return None
         except Exception as e:
             logger.error(f"Exit order error: {e}")
-            return False
+            return None
 
     def _send_entry_notification(self, trade: Trade):
         """Send Telegram notification for trade entry."""
