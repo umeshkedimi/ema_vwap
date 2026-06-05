@@ -25,3 +25,5 @@ date,signal,option,strike,entry_logged,entry_actual,exit_logged,exit_actual,resu
 2026-06-03,SELL,NIFTY2660923450PE,23450,286.00,287.00,336.00,334.80,TRAILING_SL,6500.00,6214.00,v2.0 first trade - trailing exit at +50 locked - ran 2.5 hrs - streak broken!
 2026-06-04,SELL,NIFTY2660923500PE,23500,254.00,254.70,229.00,227.90,SL_HIT,-3250.00,-3484.00,Late signal 13:15 - SL hit in 8 min - no trail triggered
 2026-06-04,BUY,NIFTY2660923250CE,23250,278.95,279.70,253.95,299.30,MANUAL_CLOSE,0.00,2548.00,Force close bug - had to close manually at 15:15 - would have been +19.60 pts
+2026-06-05,BUY,NIFTY2660923300CE,23300,291.30,292.15,266.30,265.50,SL_HIT,-3250.00,-3464.50,SL hit in 22 min - no trail triggered
+2026-06-05,SELL,NIFTY2660923600PE,23600,220.00,219.80,269.80,269.40,TRAILING_SL,6474.00,6448.00,Trailing exit at +50 locked - recovered from T1 loss - net day +2983.50
