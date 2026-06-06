@@ -49,13 +49,40 @@ ssh -i ~/.ssh/id_ed25519_ai_dev root@64.227.163.187 "grep '$(date +%Y-%m-%d)' /r
 - **Log file:** `/root/bot.log`
 - **Config:** `/root/ema_vwap/config.env`
 
-## Trade Rules (enforced in TradeManager)
+## Trade Rules (v2.0 - Trailing SL)
 
+**Entry:**
 - No trades before 9:30 AM or after 2:30 PM
-- Max trades per day configured in `MAX_TRADES_PER_DAY`
-- If first trade hits target → no more trades that day
 - One open position at a time
+- MAX_TRADES_PER_DAY=2
+
+**Exit (Trailing SL):**
+- Initial SL: -25 pts from entry
+- At +50 pts: SL moves to breakeven (entry price)
+- At +75 pts: SL moves to +50 (locks 50 pts)
+- Trails every 25 pts thereafter (+100 → SL at +75, etc.)
+- No fixed target - winners run until trailing SL hit
 - Force close at 3:15 PM
+
+**2-Trade Rule:**
+- First trade profit exit → no second trade that day
+- First trade SL or breakeven → second trade allowed
+
+**Philosophy:** Cut losses early (-25), let winners run. Inspired by Tom Hougaard's "Best Loser Wins".
+
+## Daily Workflow with User
+
+1. User says "pull the logs" after market hours
+2. Pull logs: `ssh ... "grep '$(date +%Y-%m-%d)' /root/bot.log"`
+3. Logs show actual fill prices (entry/exit updated lines)
+4. Summarize trades and update `trade_journal.csv`
+5. Sync journal to server and push to GitHub
+
+## Key Technical Decisions
+
+- **Actual fills:** Bot uses real Kite fill prices, not LTP. See `get_fill_price()` in `kite_api.py`
+- **Force close:** Runs AFTER main loop exits (not inside loop) to guarantee execution
+- **Config:** `config.env` stays on server only (has credentials). `config.example.env` is in git
 
 ## Option Symbol Formats
 
