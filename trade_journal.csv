@@ -29,3 +29,5 @@ date,signal,option,strike,entry_logged,entry_actual,exit_logged,exit_actual,resu
 2026-06-05,SELL,NIFTY2660923600PE,23600,220.00,219.80,269.80,269.40,TRAILING_SL,6474.00,6448.00,Trailing exit at +50 locked - recovered from T1 loss - net day +2983.50
 2026-06-08,SELL,NIFTY2660923400PE,23400,254.60,254.85,229.85,221.37,SL_HIT,-4875.00,-6529.25,First 3-lot trade - late signal 13:50 - SL slippage -33 pts vs -25 expected
 2026-06-09,BUY,NIFTY2660922950CE,22950,254.55,254.35,229.35,228.20,SL_HIT,-4875.00,-5099.25,Expiry day - direction right but stopped out - market +59 after exit
+2026-06-10,BUY,NIFTY2661623150CE,23150,316.45,316.45,291.45,291.45,SL_HIT,-1742.00,-1742.00,PAPER - choppy day - SL in 40 min
+2026-06-10,SELL,NIFTY2661623500PE,23500,273.30,273.30,248.30,248.30,SL_HIT,-1690.00,-1690.00,PAPER - choppy day - SL in 29 min
