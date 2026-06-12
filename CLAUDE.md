@@ -84,6 +84,35 @@ ssh -i ~/.ssh/id_ed25519_ai_dev root@64.227.163.187 "grep '$(date +%Y-%m-%d)' /r
 - **Force close:** Runs AFTER main loop exits (not inside loop) to guarantee execution
 - **Config:** `config.env` stays on server only (has credentials). `config.example.env` is in git
 
+## New Machine Setup
+
+When setting up on a new laptop:
+
+1. **Clone the repo:**
+   ```bash
+   git clone git@github.com:umeshkedimi/ema_vwap.git
+   cd ema_vwap
+   ```
+
+2. **Copy SSH key from old laptop:**
+   ```bash
+   # On old laptop, copy to new
+   scp ~/.ssh/id_ed25519_ai_dev user@new-laptop:~/.ssh/
+   scp ~/.ssh/id_ed25519_ai_dev.pub user@new-laptop:~/.ssh/
+   
+   # Or generate new key and add to server
+   ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_ai_dev
+   # Then add public key to server's ~/.ssh/authorized_keys
+   ```
+
+3. **Install Claude Code and start:**
+   ```bash
+   npm install -g @anthropic-ai/claude-code
+   claude
+   ```
+
+Claude reads `CLAUDE.md` automatically - all context is preserved.
+
 ## Option Symbol Formats
 
 Weekly: `NIFTY{YY}{M}{DD}{strike}{CE/PE}` - e.g., `NIFTY2642124500CE` (Apr 21, 2026)
