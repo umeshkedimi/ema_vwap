@@ -159,6 +159,68 @@ See `trade_journal.csv` for actual trade records with:
 
 ---
 
+## 7b. SL Cluster Backtest (Jun 15, 2026)
+
+After a run of SL hits (Jun 8–15), investigated *why*. Pulled candle-by-candle
+EMA/VWAP diffs from `bot.log` for every journaled trade with log data (32 of 34
+trades, Apr 27 → Jun 15) and joined to `trade_journal.csv` results.
+
+**Method:** for each executed signal, measured the crossover **separation** =
+`|EMA − VWAP|` at the triggering (just-closed) candle, then compared against the
+trade outcome. Used **points** (`exit_actual − entry_actual`), not rupees, since
+lot size varied 1→5 across the sample and rupee P&L isn't comparable.
+
+### Finding 1 — "thin crossover" theory is FALSE
+Separation at entry does **not** predict outcome. Correlation = **−0.03**.
+
+| Separation at entry | n | wins | avg result |
+|---|---|---|---|
+| 0–3 pts (thin) | 8 | 2 | −4.0 pts |
+| 3–6 pts | 15 | 4 | +10.3 pts |
+| 6–9 pts | 6 | 2 | +9.3 pts |
+| 9+ pts (wide) | 3 | 0 | −25.5 pts |
+
+The *widest* crossovers (May 4 @13.7, May 18 @14.0, Jun 4 @11.4) **all lost**.
+The two best winners (May 26 +25k, Jun 12 THE RUNNER) crossed with only **0.7 and
+5.3 pts**. A min-separation filter is **not supported** — threshold sweeps peak
+around 4 pts but swing wildly (133→268→199→−20 net pts across thr 3/4/5/6),
+i.e. overfit to a 32-trade sample. **Do not add a separation filter.**
+
+> ⚠️ This supersedes the loose "thin crossover" language in §3 (which was about
+> real-time vs historical *detection*, a different issue). Crossover *strength*
+> has no edge.
+
+### Finding 2 — 25% win rate is STRUCTURAL, not "lately"
+Whole sample: **8 wins / 24 losses (25%)**, avg win **+83.5 pts**, avg loss
+**−23.6 pts**, R:R ≈ **3.5:1**, expectancy **+3.16 pts/trade**. The system is
+designed to hit SLs constantly and let rare runners pay. An SL cluster between
+runners is normal texture, not a malfunction.
+
+### Finding 3 — the ONE real edge: time of day
+| Entry window | n | wins | net pts | avg/trade |
+|---|---|---|---|---|
+| **before 10:00** | 13 | 2 | **−157** | **−12.1** |
+| 10:00–12:00 | 12 | 3 | −6 | −0.5 |
+| 12:00–14:00 | 5 | 2 | +167 | +33.3 |
+| after 14:00 | 2 | 1 | +98 | +48.9 |
+
+Before-10:00 entries are the money pit — VWAP is still forming on a handful of
+candles, so the crossover is unreliable (opening noise). Skipping that window
+alone moves net from **+101 → +258 pts** over 19 trades, costing only 2 small
+winners. **Strongest data-supported change: push `TRADE_START_TIME` to 10:00.**
+(Not yet implemented — flagged for review.)
+
+### Finding 4 — points positive, rupees negative = a SIZING problem
+Net **+101 pts** but **−₹23k** over the sample. The gap means position size was
+largest during the May losing cluster (scaled to 5 lots into the drawdown; May
+netted −27 pts but most of the rupee damage). This is a risk-sizing issue, not
+an entry-signal issue — arguably the bigger lever than anything above.
+
+**Caveat:** 32 trades / 8 wins is a small sample; the time-of-day split could be
+partly regime. Want ~2–3× more data before hard-coding rules.
+
+---
+
 ## 8. Key Files
 
 | File | Purpose |
@@ -182,6 +244,7 @@ See `trade_journal.csv` for actual trade records with:
 | Apr 24 | Added breakeven SL at +50 pts | Protect profits |
 | Apr 27 | Fixed strike selection (floor/ceil) | Higher delta for breakeven |
 | Apr 29 | Switched to historical-only scanning (2 sec delay) | Catch thin crossovers, avoid false positives |
+| Jun 15 | Backtested SL cluster (see §7b) — no code change | Crossover strength has no edge; time-of-day + sizing do |
 
 ---
 
