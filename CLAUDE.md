@@ -52,7 +52,7 @@ ssh -i ~/.ssh/id_ed25519_ai_dev root@64.227.163.187 "grep '$(date +%Y-%m-%d)' /r
 ## Trade Rules (v2.0 - Trailing SL)
 
 **Entry:**
-- No trades before 9:30 AM or after 2:30 PM
+- No trades before 10:00 AM or after 2:30 PM (10:00 start added Jun 16 — backtest showed before-10:00 entries are the worst performers; see LEARNINGS.md §7b)
 - One open position at a time
 - MAX_TRADES_PER_DAY=2
 

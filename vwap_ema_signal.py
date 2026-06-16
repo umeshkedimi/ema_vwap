@@ -664,7 +664,7 @@ def main():
 
         trading_config = {
             'paper_trading': os.getenv('PAPER_TRADING', 'true').lower() == 'true',
-            'trade_start_time': os.getenv('TRADE_START_TIME', '09:30'),
+            'trade_start_time': os.getenv('TRADE_START_TIME', '10:00'),
             'trade_end_time': os.getenv('TRADE_END_TIME', '14:30'),
             'max_trades_per_day': int(os.getenv('MAX_TRADES_PER_DAY', '2')),
             'target_points': int(os.getenv('TARGET_POINTS', '80')),

@@ -102,7 +102,7 @@ At 09:40:02:
 | Rule | Implementation |
 |------|----------------|
 | Max 1 trade/day | `MAX_TRADES_PER_DAY=1` in config |
-| No trades before 9:30 AM | `TRADE_START_TIME=09:30` |
+| No trades before 10:00 AM | `TRADE_START_TIME=10:00` (was 09:30; changed Jun 16, see §7b) |
 | No trades after 2:30 PM | `TRADE_END_TIME=14:30` |
 | Force close at 3:15 PM | `FORCE_CLOSE_TIME=15:15` |
 | Target: +80 points | `TARGET_POINTS=80` |
@@ -208,7 +208,10 @@ Before-10:00 entries are the money pit — VWAP is still forming on a handful of
 candles, so the crossover is unreliable (opening noise). Skipping that window
 alone moves net from **+101 → +258 pts** over 19 trades, costing only 2 small
 winners. **Strongest data-supported change: push `TRADE_START_TIME` to 10:00.**
-(Not yet implemented — flagged for review.)
+**Implemented Jun 16** (`TRADE_START_TIME=10:00`). Scanning still starts 09:25 so
+EMA/VWAP are warmed up; only entries are blocked before 10:00. Jun 16 itself was
+a textbook case — 2 SL hits on 09:55 and 10:05 thin-crossover entries — both
+would have been skipped or delayed under the new rule.
 
 ### Finding 4 — points positive, rupees negative = a SIZING problem
 Net **+101 pts** but **−₹23k** over the sample. The gap means position size was
@@ -245,6 +248,7 @@ partly regime. Want ~2–3× more data before hard-coding rules.
 | Apr 27 | Fixed strike selection (floor/ceil) | Higher delta for breakeven |
 | Apr 29 | Switched to historical-only scanning (2 sec delay) | Catch thin crossovers, avoid false positives |
 | Jun 15 | Backtested SL cluster (see §7b) — no code change | Crossover strength has no edge; time-of-day + sizing do |
+| Jun 16 | `TRADE_START_TIME` 09:30 → 10:00 | Before-10:00 entries net −157 pts / 13 trades (§7b) |
 
 ---
 
