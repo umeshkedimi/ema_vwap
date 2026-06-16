@@ -33,3 +33,5 @@ date,signal,option,strike,entry_logged,entry_actual,exit_logged,exit_actual,resu
 2026-06-10,SELL,NIFTY2661623500PE,23500,273.30,273.30,248.30,248.30,SL_HIT,-1690.00,-1690.00,PAPER - choppy day - SL in 29 min
 2026-06-12,BUY,NIFTY2661623250CE,23250,248.05,248.05,423.05,423.05,TRAILING_SL,11355.50,11355.50,PAPER - THE RUNNER! +175 pts - trailed from +50 to +175 - system validated
 2026-06-15,BUY,NIFTY2661623750CE,23750,235.25,235.25,207.40,207.40,SL_HIT,-1810.25,-1810.25,PAPER - signal 10:30 entry 10:35 - SL hit 12:16 (-27.85 pts) - SELL signal 12:05 skipped (in trade) - no 2nd trade (no new crossover) - EMA stayed below VWAP all day
+2026-06-16,BUY,NIFTY2661623700CE,23700,235.40,235.40,210.30,210.30,SL_HIT,-1631.50,-1631.50,PAPER - signal 09:50 (sep +2.1) entry 09:55 - SL 10:03 (-25.1 pts) - thin crossover in morning chop
+2026-06-16,SELL,NIFTY2661624150PE,24150,246.90,246.90,221.35,221.35,SL_HIT,-1660.75,-1660.75,PAPER - signal 10:00 (sep -3.9) entry 10:05 - SL 10:20 (-25.5 pts) - 2nd SL = max trades hit bot stopped 10:20 - both early/thin = validates Jun15 backtest (before-10:00 money pit) - day -3292.25
