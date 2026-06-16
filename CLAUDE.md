@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Nifty options trading bot that generates buy/sell signals based on 5 EMA crossing VWAP on 5-minute candles. Runs on a DigitalOcean VPS at `64.227.163.187`.
+Nifty options trading bot that generates buy/sell signals based on 5 EMA crossing VWAP on 5-minute candles. Runs on a DigitalOcean VPS (paper-trade only; real server IP and SSH details are kept out of this public repo).
 
 ## Architecture
 
@@ -36,11 +36,11 @@ python vwap_ema_signal.py
 # Update tokens on server (run daily before 9 AM)
 ./update_tokens.sh
 
-# SSH to production server
-ssh -i ~/.ssh/id_ed25519_ai_dev root@64.227.163.187
+# SSH to production server (replace YOUR_SSH_KEY / YOUR_SERVER_IP with real values)
+ssh -i ~/.ssh/YOUR_SSH_KEY root@YOUR_SERVER_IP
 
 # Check today's logs on server
-ssh -i ~/.ssh/id_ed25519_ai_dev root@64.227.163.187 "grep '$(date +%Y-%m-%d)' /root/bot.log | tail -100"
+ssh -i ~/.ssh/YOUR_SSH_KEY root@YOUR_SERVER_IP "grep '$(date +%Y-%m-%d)' /root/bot.log | tail -100"
 ```
 
 ## Server Details
@@ -104,12 +104,12 @@ When setting up on a new laptop:
 
 2. **Copy SSH key from old laptop:**
    ```bash
-   # On old laptop, copy to new
-   scp ~/.ssh/id_ed25519_ai_dev user@new-laptop:~/.ssh/
-   scp ~/.ssh/id_ed25519_ai_dev.pub user@new-laptop:~/.ssh/
+   # On old laptop, copy to new (use your actual key filename)
+   scp ~/.ssh/YOUR_SSH_KEY user@new-laptop:~/.ssh/
+   scp ~/.ssh/YOUR_SSH_KEY.pub user@new-laptop:~/.ssh/
    
    # Or generate new key and add to server
-   ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_ai_dev
+   ssh-keygen -t ed25519 -f ~/.ssh/YOUR_SSH_KEY
    # Then add public key to server's ~/.ssh/authorized_keys
    ```
 

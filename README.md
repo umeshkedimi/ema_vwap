@@ -137,9 +137,13 @@ ema_vwap/
 
 ## Daily Token Update
 
-Fyers and Kite tokens expire daily. Update before 9:10 AM:
+Fyers and Kite tokens expire daily. First-time setup — copy the template and fill in
+your server IP and SSH key (the real `update_tokens.sh` is gitignored so credentials
+stay private):
 
 ```bash
+cp update_tokens.example.sh update_tokens.sh
+# edit SERVER and SSH_KEY at the top, then:
 ./update_tokens.sh
 ```
 

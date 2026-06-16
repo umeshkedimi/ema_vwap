@@ -9,11 +9,11 @@ Complete instructions to set up the VWAP-EMA trading bot on a new server.
 | Item | Value |
 |------|-------|
 | Provider | DigitalOcean |
-| IP | 64.227.163.187 |
+| IP | YOUR_SERVER_IP |
 | OS | Ubuntu 24.04.3 LTS |
 | Python | 3.12.3 |
 | Timezone | Asia/Kolkata (IST) |
-| SSH Key | ~/.ssh/id_ed25519_ai_dev |
+| SSH Key | ~/.ssh/YOUR_SSH_KEY |
 
 ---
 
@@ -69,10 +69,10 @@ urllib3==2.6.3
 ### 7. Copy project files from local machine
 ```bash
 # Run from your local machine
-scp -i ~/.ssh/YOUR_KEY /Users/umesh.kedimi/ema_vwap/*.py root@NEW_SERVER_IP:/root/ema_vwap/
-scp -i ~/.ssh/YOUR_KEY /Users/umesh.kedimi/ema_vwap/*.md root@NEW_SERVER_IP:/root/ema_vwap/
-scp -i ~/.ssh/YOUR_KEY /Users/umesh.kedimi/ema_vwap/*.csv root@NEW_SERVER_IP:/root/ema_vwap/
-scp -i ~/.ssh/YOUR_KEY /Users/umesh.kedimi/ema_vwap/*.env root@NEW_SERVER_IP:/root/ema_vwap/
+scp -i ~/.ssh/YOUR_KEY /path/to/ema_vwap/*.py root@NEW_SERVER_IP:/root/ema_vwap/
+scp -i ~/.ssh/YOUR_KEY /path/to/ema_vwap/*.md root@NEW_SERVER_IP:/root/ema_vwap/
+scp -i ~/.ssh/YOUR_KEY /path/to/ema_vwap/*.csv root@NEW_SERVER_IP:/root/ema_vwap/
+scp -i ~/.ssh/YOUR_KEY /path/to/ema_vwap/*.env root@NEW_SERVER_IP:/root/ema_vwap/
 ```
 
 ### 8. Set up cron job
