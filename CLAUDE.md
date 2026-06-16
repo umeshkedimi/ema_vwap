@@ -76,7 +76,15 @@ ssh -i ~/.ssh/id_ed25519_ai_dev root@64.227.163.187 "grep '$(date +%Y-%m-%d)' /r
 2. Pull logs: `ssh ... "grep '$(date +%Y-%m-%d)' /root/bot.log"`
 3. Logs show actual fill prices (entry/exit updated lines)
 4. Summarize trades and update `trade_journal.csv`
-5. Sync journal to server and push to GitHub
+5. **Check for blocked pre-10:00 signals** (10am filter tracking):
+   `ssh ... "grep '$(date +%Y-%m-%d)' /root/bot.log | grep -B1 'Outside trading hours'"`
+   For each one at a `09:xx` timestamp, append a row to `skipped_premarket_signals.csv`.
+   Estimate `would_have_outcome` from the candle "Diff"/EMA lines after the signal:
+   delta~0.7 option, so −25 option-pt SL ≈ **−36 Nifty pts** against signal, breakeven
+   +50 ≈ **+71 Nifty pts** in favor. If Nifty reversed ~36 pts before running ~71, it's
+   a would-be SL; if it ran in favor, a would-be win. (Approximation — no premium data
+   is logged for blocked signals.) Periodically tally to judge if the filter is helping.
+6. Sync journal to server and push to GitHub
 
 ## Key Technical Decisions
 
