@@ -1,1 +1,2 @@
 date,candle_time,signal,nifty,ema,vwap,separation,would_have_outcome,notes
+2026-06-17,09:30,BUY,24009,24009.17,24004.67,+4.50,WOULD_WIN,"EMA rose monotonically to ~24079 (+70) by 10:55 with no -36 dip - BUY CE would have cleared breakeven and trailed up. EMA-proxy estimate, no premium data. First blocked signal that argues AGAINST the 10am filter."
