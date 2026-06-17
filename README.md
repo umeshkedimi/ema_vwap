@@ -40,6 +40,20 @@ Fyers API (Candles) → Signal Detection → Kite API (Orders) → Telegram (Ale
 | `option_selector.py` | Selects strike based on delta (~0.7 ITM) or premium mode |
 | `kite_api.py` | Zerodha order execution |
 
+## Key Findings
+
+Findings from running the bot live (paper) and backtesting the trade log. Full detail in [`LEARNINGS.md`](LEARNINGS.md).
+
+**The system is asymmetric by design, not by accident.** Across 32 logged trades the win rate is ~25% (8W/24L), but the average win (+83.5 pts) is ~3.5× the average loss (−23.6 pts), giving a positive expectancy of ~+3.2 pts/trade. Frequent small stop-losses punctuated by rare large runners is the *intended* texture — a cluster of SL hits is normal, not a malfunction.
+
+**Crossover strength has no predictive edge — so I didn't add a filter for it.** It was tempting to filter out "thin" EMA/VWAP crossovers after a losing streak, but the data refuted it: correlation between crossover separation and outcome was −0.03, and the three *widest* crossovers in the sample all lost. Threshold sweeps swung wildly on the small sample (classic overfitting), so the filter was rejected.
+
+**The one real edge is time of day.** Entries before 10:00 AM were the money pit (−157 pts over 13 trades) — VWAP is still forming on the opening candles, making the early crossover unreliable. Blocking entries before 10:00 lifts net performance from +101 → +258 pts at the cost of only two small winners. This became the single data-supported change (`TRADE_START_TIME=10:00`).
+
+**Points-positive but rupees-negative pointed to position sizing as the bigger lever.** The sample was +101 pts yet −₹23k, because size was largest during a drawdown. The signal wasn't the main problem — risk sizing was.
+
+> **Caveat:** 32 trades / 8 wins is a small sample, so these splits may be partly regime-driven. The takeaway is the *process* — test the hypothesis against the full log, reject what overfits, and change only what the data supports.
+
 ## Setup
 
 ### 1. Clone and configure
