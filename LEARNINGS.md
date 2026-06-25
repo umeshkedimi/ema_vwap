@@ -213,6 +213,28 @@ EMA/VWAP are warmed up; only entries are blocked before 10:00. Jun 16 itself was
 a textbook case — 2 SL hits on 09:55 and 10:05 thin-crossover entries — both
 would have been skipped or delayed under the new rule.
 
+#### Post-implementation tally (live tracking since Jun 16)
+
+Every pre-10:00 signal the filter blocks is logged to
+`skipped_premarket_signals.csv` with an EMA-proxy outcome estimate (−25 option pts
+≈ −36 Nifty pts against; +50 option ≈ +71 Nifty pts in favor — no premium data for
+blocked signals, so these are directional approximations). Running count:
+
+| Date | Time | Signal | Est. outcome |
+|---|---|---|---|
+| Jun 17 | 09:30 | BUY | WOULD_WIN |
+| Jun 24 | 09:25 | BUY | WOULD_WIN |
+| Jun 24 | 09:45 | SELL | WOULD_LOSE |
+| Jun 25 | 09:45 | BUY | WOULD_WIN |
+
+**Tally: 3 would-be WINS blocked vs 1 would-be LOSS avoided.** So far the filter is
+*costing* more than it saves — the opposite of the §7b backtest that motivated it.
+This is only 4 signals (far too small to act on) and the estimates are EMA-proxy,
+not real fills, so it's noise as much as signal. But it's a flag worth watching: if
+the ratio keeps leaning this way over ~10+ blocked signals, it argues the −157 pts /
+13 trades before-10:00 figure was partly regime, and the 10:00 cutoff should be
+revisited (or loosened toward 09:45). Do not change anything yet — keep logging.
+
 ### Finding 4 — points positive, rupees negative = a SIZING problem
 Net **+101 pts** but **−₹23k** over the sample. The gap means position size was
 largest during the May losing cluster (scaled to 5 lots into the drawdown; May
