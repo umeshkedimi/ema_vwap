@@ -186,10 +186,15 @@ class TelegramNotifier:
         if bot_token_2 and chat_id_2:
             self.destinations.append((bot_token_2, chat_id_2))
 
-    def send_message(self, message):
-        """Send the message to every configured Telegram bot/chat at once."""
+    def send_message(self, message, primary_only=False):
+        """Send the message to every configured Telegram bot/chat at once.
+
+        primary_only=True sends to just the first (old) bot — used for the
+        operator-only token-status startup notice.
+        """
+        destinations = self.destinations[:1] if primary_only else self.destinations
         all_ok = True
-        for bot_token, chat_id in self.destinations:
+        for bot_token, chat_id in destinations:
             url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
             payload = {
                 "chat_id": chat_id,
@@ -623,7 +628,7 @@ def main():
                 f"• Kite: {'✅ Valid (' + kite_user + ')' if kite_valid else '⏸️ Disabled'}\n\n"
                 f"✅ All tokens valid. Waiting for market hours..."
             )
-            telegram.send_message(startup_message)
+            telegram.send_message(startup_message, primary_only=True)
             logger.info("Token validation successful")
             break
 
@@ -641,7 +646,7 @@ def main():
                 f"• Kite: {kite_status}\n\n"
                 f"❌ <b>FAILED:</b> Tokens still invalid after retries. Exiting."
             )
-            telegram.send_message(final_message)
+            telegram.send_message(final_message, primary_only=True)
             logger.error("Token validation failed after retries. Exiting.")
             return
 
@@ -656,7 +661,7 @@ def main():
                 f"⚠️ <b>ACTION REQUIRED:</b> Update tokens before 9:20 AM!\n"
                 f"Retrying every 2 minutes..."
             )
-            telegram.send_message(alert_message)
+            telegram.send_message(alert_message, primary_only=True)
             alert_sent = True
 
         logger.info(f"Token validation failed. Retrying in {retry_interval} seconds (until 9:20 AM)...")
