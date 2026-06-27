@@ -30,6 +30,9 @@ FYERS_SECRET_KEY = os.getenv('FYERS_SECRET_KEY')
 FYERS_REDIRECT_URI = os.getenv('FYERS_REDIRECT_URI')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+# Optional second Telegram bot — messages are sent to both at once when set
+TELEGRAM_BOT_TOKEN_2 = os.getenv('TELEGRAM_BOT_TOKEN_2')
+TELEGRAM_CHAT_ID_2 = os.getenv('TELEGRAM_CHAT_ID_2')
 SYMBOL = os.getenv('SYMBOL', 'NSE:NIFTY50-INDEX')
 EMA_PERIOD = int(os.getenv('EMA_PERIOD', '5'))
 SCAN_START_TIME = os.getenv('SCAN_START_TIME', '09:15')
@@ -176,30 +179,34 @@ class FyersAPI:
 class TelegramNotifier:
     """Sends notifications via Telegram."""
 
-    def __init__(self, bot_token, chat_id):
-        self.bot_token = bot_token
-        self.chat_id = chat_id
-        self.base_url = f"https://api.telegram.org/bot{bot_token}"
+    def __init__(self, bot_token, chat_id, bot_token_2=None, chat_id_2=None):
+        # List of (bot_token, chat_id) destinations. A second bot is added only
+        # when both its token and chat id are provided, so messages go to both at once.
+        self.destinations = [(bot_token, chat_id)]
+        if bot_token_2 and chat_id_2:
+            self.destinations.append((bot_token_2, chat_id_2))
 
     def send_message(self, message):
-        """Send a message to the configured chat."""
-        url = f"{self.base_url}/sendMessage"
-        payload = {
-            "chat_id": self.chat_id,
-            "text": message,
-            "parse_mode": "HTML"
-        }
-        try:
-            response = requests.post(url, json=payload, timeout=10)
-            if response.status_code == 200:
-                logger.info("Telegram message sent successfully")
-                return True
-            else:
-                logger.error(f"Telegram error: {response.text}")
-                return False
-        except Exception as e:
-            logger.error(f"Failed to send Telegram message: {e}")
-            return False
+        """Send the message to every configured Telegram bot/chat at once."""
+        all_ok = True
+        for bot_token, chat_id in self.destinations:
+            url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+            payload = {
+                "chat_id": chat_id,
+                "text": message,
+                "parse_mode": "HTML"
+            }
+            try:
+                response = requests.post(url, json=payload, timeout=10)
+                if response.status_code == 200:
+                    logger.info("Telegram message sent successfully")
+                else:
+                    logger.error(f"Telegram error: {response.text}")
+                    all_ok = False
+            except Exception as e:
+                logger.error(f"Failed to send Telegram message: {e}")
+                all_ok = False
+        return all_ok
 
 
 class VWAPEMASignalBot:
@@ -542,7 +549,8 @@ def main():
         access_token=access_token
     )
 
-    telegram = TelegramNotifier(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+    telegram = TelegramNotifier(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID,
+                                TELEGRAM_BOT_TOKEN_2, TELEGRAM_CHAT_ID_2)
 
     trading_enabled = os.getenv('TRADING_ENABLED', 'false').lower() == 'true'
     kite_api_key = os.getenv('KITE_API_KEY')
