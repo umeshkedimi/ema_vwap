@@ -60,7 +60,7 @@ ssh -i ~/.ssh/YOUR_SSH_KEY root@YOUR_SERVER_IP "grep '$(date +%Y-%m-%d)' /root/b
 - Initial SL: -25 pts from entry
 - At +50 pts: SL moves to breakeven (entry price)
 - At +75 pts: SL moves to +50 (locks 50 pts)
-- Trails every 25 pts thereafter (+100 → SL at +75, etc.)
+- Trails every 5 pts thereafter, always 25 pts behind (+80 → SL +55, +85 → SL +60, +100 → SL +75, etc.)
 - No fixed target - winners run until trailing SL hit
 - Force close at 3:15 PM
 

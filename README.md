@@ -11,7 +11,7 @@ Automated trading bot for Nifty options based on 5 EMA crossing VWAP on 5-minute
 **Exit Rules (Trailing SL):**
 - **Stop Loss**: -25 points from entry
 - **Breakeven**: At +50 pts, SL moves to entry (0)
-- **Trailing SL**: At +75 pts, SL moves to +50, then trails every 25 pts
+- **Trailing SL**: At +75 pts, SL moves to +50, then trails every 5 pts (always 25 behind)
 - **No fixed target**: Winners run until trailing SL is hit
 - **Force Close**: 3:15 PM if still open
 
@@ -20,9 +20,10 @@ SL Progression:
 Entry → SL at -25
 +50 pts → SL moves to 0 (breakeven)
 +75 pts → SL moves to +50 (lock 50)
++80 pts → SL moves to +55 (lock 55)
++85 pts → SL moves to +60 (lock 60)
 +100 pts → SL moves to +75 (lock 75)
-+125 pts → SL moves to +100 (lock 100)
-... trails every 25 pts
+... trails every 5 pts, always 25 behind
 ```
 
 **Philosophy**: Cut losses early (-25), let winners run (trailing SL). Inspired by Tom Hougaard's "Best Loser Wins".
@@ -169,7 +170,7 @@ The bot sends alerts for:
 - Signal detection
 - Trade entry with option details
 - Breakeven trigger (+50 pts)
-- Trailing SL updates (+75, +100, +125... pts)
+- Trailing SL updates (+75, +80, +85... every 5 pts)
 - Trade exit (trailing SL/SL/breakeven)
 - Daily summary
 
