@@ -253,7 +253,7 @@ class TradeManager:
             )
 
         if current_profit >= 75:
-            new_trailing_level = int((current_profit // 25) * 25)
+            new_trailing_level = int((current_profit // 5) * 5)
             if new_trailing_level > trade.trailing_sl_level:
                 trade.trailing_sl_level = new_trailing_level
                 new_sl = trade.entry_price + (new_trailing_level - 25)
@@ -265,7 +265,7 @@ class TradeManager:
                         f"Option: NIFTY {trade.strike} {trade.option_type}\n"
                         f"LTP: {current_price:.2f} (+{current_profit:.0f} pts)\n"
                         f"New SL: {trade.stoploss_price:.2f} (locking +{new_trailing_level - 25:.0f} profit)\n"
-                        f"Next trail at: +{new_trailing_level + 25:.0f} pts"
+                        f"Next trail at: +{new_trailing_level + 5:.0f} pts"
                     )
 
     def _get_option_price(self, tradingsymbol: str) -> Optional[float]:
@@ -371,7 +371,7 @@ class TradeManager:
                 current_profit = current_price - trade.entry_price
                 pnl_sign = "+" if unrealized_pnl >= 0 else ""
                 if trade.trailing_sl_level > 0:
-                    next_trail = trade.trailing_sl_level + 25
+                    next_trail = trade.trailing_sl_level + 5
                     trail_info = f"Trail: +{next_trail:.0f}"
                 elif trade.sl_at_breakeven:
                     trail_info = "Trail: +75"
@@ -439,7 +439,7 @@ class TradeManager:
             f"Entry: {trade.entry_price:.2f}\n"
             f"SL: {trade.stoploss_price:.2f} (-{self.config['stoploss_points']})\n"
             f"BE Trigger: +{self.BREAKEVEN_TRIGGER_POINTS} pts\n"
-            f"Trail starts: +75 pts (then every 25)\n"
+            f"Trail starts: +75 pts (then every 5)\n"
             f"Qty: {trade.quantity}\n\n"
             f"Mode: {mode}"
         )
