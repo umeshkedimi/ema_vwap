@@ -235,6 +235,15 @@ the ratio keeps leaning this way over ~10+ blocked signals, it argues the −157
 13 trades before-10:00 figure was partly regime, and the 10:00 cutoff should be
 revisited (or loosened toward 09:45). Do not change anything yet — keep logging.
 
+**Update Jun 27 — filter removed (`TRADE_START_TIME` back to 09:30).** User opted to
+drop the 10:00 cutoff. The post-implementation tally above (3 would-be wins blocked
+vs 1 would-be loss avoided) ran opposite to the backtest, so the live evidence did not
+support keeping it. This is a small, regime-aware sample, not a refutation of §7b's
+backtest — the before-10:00 window may still underperform over a larger sample — but
+on the data we actually have since Jun 16, the filter cost more than it saved.
+`skipped_premarket_signals.csv` tracking is retired (entries now fire in 09:30–10:00).
+Also changed the same day: `MAX_TRADES_PER_DAY` 2 → 1 (one trade per day).
+
 ### Finding 4 — points positive, rupees negative = a SIZING problem
 Net **+101 pts** but **−₹23k** over the sample. The gap means position size was
 largest during the May losing cluster (scaled to 5 lots into the drawdown; May
@@ -271,6 +280,8 @@ partly regime. Want ~2–3× more data before hard-coding rules.
 | Apr 29 | Switched to historical-only scanning (2 sec delay) | Catch thin crossovers, avoid false positives |
 | Jun 15 | Backtested SL cluster (see §7b) — no code change | Crossover strength has no edge; time-of-day + sizing do |
 | Jun 16 | `TRADE_START_TIME` 09:30 → 10:00 | Before-10:00 entries net −157 pts / 13 trades (§7b) |
+| Jun 27 | `TRADE_START_TIME` 10:00 → 09:30 (filter removed) | Live tally blocked 3 would-be wins vs 1 loss avoided (§7b post-impl) |
+| Jun 27 | `MAX_TRADES_PER_DAY` 2 → 1 | Simplify to one trade per day |
 
 ---
 

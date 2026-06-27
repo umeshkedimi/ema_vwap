@@ -52,9 +52,9 @@ ssh -i ~/.ssh/YOUR_SSH_KEY root@YOUR_SERVER_IP "grep '$(date +%Y-%m-%d)' /root/b
 ## Trade Rules (v2.0 - Trailing SL)
 
 **Entry:**
-- No trades before 10:00 AM or after 2:30 PM (10:00 start added Jun 16 — backtest showed before-10:00 entries are the worst performers; see LEARNINGS.md §7b)
+- No trades before 9:30 AM or after 2:30 PM (the 10:00 start filter was removed Jun 27 — post-implementation tally showed it blocked more would-be winners than losers it avoided; see LEARNINGS.md §7b)
 - One open position at a time
-- MAX_TRADES_PER_DAY=2
+- MAX_TRADES_PER_DAY=1
 
 **Exit (Trailing SL):**
 - Initial SL: -25 pts from entry
@@ -64,9 +64,9 @@ ssh -i ~/.ssh/YOUR_SSH_KEY root@YOUR_SERVER_IP "grep '$(date +%Y-%m-%d)' /root/b
 - No fixed target - winners run until trailing SL hit
 - Force close at 3:15 PM
 
-**2-Trade Rule:**
-- First trade profit exit → no second trade that day
-- First trade SL or breakeven → second trade allowed
+**One-Trade Rule (since Jun 27):**
+- MAX_TRADES_PER_DAY=1 — the trading day ends after the first trade closes, win or lose.
+- (Previously 2 trades with a "first-trade-profit → no second trade" rule; simplified to a single trade per day.)
 
 **Philosophy:** Cut losses early (-25), let winners run. Inspired by Tom Hougaard's "Best Loser Wins".
 
@@ -76,15 +76,12 @@ ssh -i ~/.ssh/YOUR_SSH_KEY root@YOUR_SERVER_IP "grep '$(date +%Y-%m-%d)' /root/b
 2. Pull logs: `ssh ... "grep '$(date +%Y-%m-%d)' /root/bot.log"`
 3. Logs show actual fill prices (entry/exit updated lines)
 4. Summarize trades and update `trade_journal.csv`
-5. **Check for blocked pre-10:00 signals** (10am filter tracking):
-   `ssh ... "grep '$(date +%Y-%m-%d)' /root/bot.log | grep -B1 'Outside trading hours'"`
-   For each one at a `09:xx` timestamp, append a row to `skipped_premarket_signals.csv`.
-   Estimate `would_have_outcome` from the candle "Diff"/EMA lines after the signal:
-   delta~0.7 option, so −25 option-pt SL ≈ **−36 Nifty pts** against signal, breakeven
-   +50 ≈ **+71 Nifty pts** in favor. If Nifty reversed ~36 pts before running ~71, it's
-   a would-be SL; if it ran in favor, a would-be win. (Approximation — no premium data
-   is logged for blocked signals.) Periodically tally to judge if the filter is helping.
-6. Sync journal to server and push to GitHub
+5. **(Retired Jun 27)** Pre-10:00 blocked-signal tracking — no longer applies now that
+   `TRADE_START_TIME=09:30`. Signals in 09:30–10:00 now execute normally instead of
+   being skipped, so there are no "Outside trading hours" blocks to log. The historical
+   tally lives in `skipped_premarket_signals.csv` + LEARNINGS.md §7b; leave it as a record.
+6. Sync journal to server. **Do NOT push to GitHub** unless the user explicitly says so
+   (commit locally + sync to server only — see memory `no-auto-push`).
 
 ## Key Technical Decisions
 

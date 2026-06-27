@@ -106,7 +106,7 @@ TRADE_START_TIME=09:30  # No trades before this (skip first 15 min)
 TRADE_END_TIME=14:30    # No trades after this
 
 # Trade parameters
-MAX_TRADES_PER_DAY=2    # Max 2 trades per day
+MAX_TRADES_PER_DAY=1    # Max 1 trade per day
 STOPLOSS_POINTS=25      # Initial SL at -25 points
 LOT_SIZE=130            # Quantity (1 lot = 65)
 
@@ -120,10 +120,8 @@ ITM_OFFSET_FOR_DELTA=150  # ITM points for delta mode
 
 1. **Timing**: No trades before 9:30 AM or after 2:30 PM
 2. **One at a time**: Must close current trade before taking next signal
-3. **Daily limit**: Max 2 trades per day
-4. **Profit rule**: If first trade exits with profit (via trailing SL), no second trade
-5. **Loss/BE rule**: If first trade hits SL or breakeven, second trade allowed
-6. **Expiry**: Weekly options (Tuesday expiry)
+3. **Daily limit**: Max 1 trade per day — the day ends after the first trade closes
+4. **Expiry**: Weekly options (Tuesday expiry)
 
 ## Option Symbol Formats
 
