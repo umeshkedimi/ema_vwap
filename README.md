@@ -107,7 +107,7 @@ TRADE_START_TIME=09:30  # No trades before this (skip first 15 min)
 TRADE_END_TIME=14:30    # No trades after this
 
 # Trade parameters
-MAX_TRADES_PER_DAY=1    # Max 1 trade per day
+MAX_TRADES_PER_DAY=2    # Max 2 trades per day
 STOPLOSS_POINTS=25      # Initial SL at -25 points
 LOT_SIZE=130            # Quantity (1 lot = 65)
 
@@ -121,8 +121,10 @@ ITM_OFFSET_FOR_DELTA=150  # ITM points for delta mode
 
 1. **Timing**: No trades before 9:30 AM or after 2:30 PM
 2. **One at a time**: Must close current trade before taking next signal
-3. **Daily limit**: Max 1 trade per day — the day ends after the first trade closes
-4. **Expiry**: Weekly options (Tuesday expiry)
+3. **Daily limit**: Max 2 trades per day
+4. **Pre-10 AM block**: Only 1 trade allowed before 10:00 AM — if Trade 1 opens and closes before 10:00, Trade 2 must wait until after 10:00 AM
+5. **Second trade condition**: Trade 2 only fires if Trade 1 closed with SL hit or breakeven — if Trade 1 exits in profit, day ends
+6. **Expiry**: Weekly options (Tuesday expiry)
 
 ## Option Symbol Formats
 
@@ -176,9 +178,13 @@ The bot sends alerts for:
 
 ## Version History
 
+### v2.1 (July 2026) - Two Trades
+- MAX_TRADES_PER_DAY raised to 2 (LOT_SIZE=130, 2 lots × 65)
+- Trade 2 only if Trade 1 closed with SL hit or breakeven (profit → day ends)
+- Pre-10 AM block: max 1 trade before 10:00 AM
+
 ### v2.0 (June 2026) - Trailing SL
 - Replaced fixed +80 target with trailing SL starting at +75
-- Added 2 trades per day (2nd trade only if 1st loses or breaks even)
 - Philosophy: Cut losses early, let winners run
 
 ### v1.0 (April 2026) - Initial Release

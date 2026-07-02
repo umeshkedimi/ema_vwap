@@ -49,12 +49,13 @@ ssh -i ~/.ssh/YOUR_SSH_KEY root@YOUR_SERVER_IP "grep '$(date +%Y-%m-%d)' /root/b
 - **Log file:** `/root/bot.log`
 - **Config:** `/root/ema_vwap/config.env`
 
-## Trade Rules (v2.0 - Trailing SL)
+## Trade Rules (v2.1 - Two Trades)
 
 **Entry:**
-- No trades before 9:30 AM or after 2:30 PM (the 10:00 start filter was removed Jun 27 — post-implementation tally showed it blocked more would-be winners than losers it avoided; see LEARNINGS.md §7b)
+- No trades before 9:30 AM or after 2:30 PM
 - One open position at a time
-- MAX_TRADES_PER_DAY=1
+- MAX_TRADES_PER_DAY=2
+- Only 1 trade allowed before 10:00 AM (pre-10 AM block)
 
 **Exit (Trailing SL):**
 - Initial SL: -25 pts from entry
@@ -64,9 +65,12 @@ ssh -i ~/.ssh/YOUR_SSH_KEY root@YOUR_SERVER_IP "grep '$(date +%Y-%m-%d)' /root/b
 - No fixed target - winners run until trailing SL hit
 - Force close at 3:15 PM
 
-**One-Trade Rule (since Jun 27):**
-- MAX_TRADES_PER_DAY=1 — the trading day ends after the first trade closes, win or lose.
-- (Previously 2 trades with a "first-trade-profit → no second trade" rule; simplified to a single trade per day.)
+**Two-Trade Rule (since Jul 2):**
+- MAX_TRADES_PER_DAY=2
+- Trade 2 only fires if Trade 1 closed with SL hit or breakeven exit
+- If Trade 1 exits with profit → day ends, no Trade 2
+- Only 1 trade allowed before 10:00 AM — if T1 opens and closes pre-10, T2 must wait until after 10:00 AM
+- LOT_SIZE=130 (2 lots × 65)
 
 **Philosophy:** Cut losses early (-25), let winners run. Inspired by Tom Hougaard's "Best Loser Wins".
 
