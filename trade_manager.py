@@ -109,6 +109,9 @@ class TradeManager:
         if self.daily_state.open_trade is not None:
             return False, "Trade already open - wait for exit"
 
+        if datetime.now().time() < time(10, 0) and self.daily_state.trades_executed >= 1:
+            return False, "Only 1 trade allowed before 10:00 AM"
+
         if self.daily_state.trades_executed >= self.config['max_trades_per_day']:
             return False, f"Max {self.config['max_trades_per_day']} trades reached for today"
 
