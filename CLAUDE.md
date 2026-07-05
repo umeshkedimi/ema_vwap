@@ -56,7 +56,7 @@ ssh -i ~/.ssh/YOUR_SSH_KEY root@YOUR_SERVER_IP "grep '$(date +%Y-%m-%d)' /root/b
 - One open position at a time
 - MAX_TRADES_PER_DAY=1
 - PAPER_TRADING=true
-- LOT_SIZE=130 (2 lots × 65)
+- LOT_SIZE=195 (3 lots × 65)
 
 **Exit (Fixed Target/SL, no trailing):**
 - Target: +50 pts from entry

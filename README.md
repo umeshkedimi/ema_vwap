@@ -98,7 +98,7 @@ TRADE_END_TIME=14:30    # No trades after this
 MAX_TRADES_PER_DAY=1    # Max 1 trade per day
 TARGET_POINTS=50        # Fixed target at +50 points
 STOPLOSS_POINTS=25      # Fixed SL at -25 points
-LOT_SIZE=130            # Quantity (1 lot = 65)
+LOT_SIZE=195            # Quantity (1 lot = 65, this is 3 lots)
 
 # Strike selection
 STRIKE_MODE=delta       # delta or premium
@@ -167,7 +167,7 @@ The bot sends alerts for:
 ### v3.0 (July 2026) - Fixed Target, 1:2 R:R
 - Back to 1 trade per day, PAPER_TRADING=true
 - Fixed target +50 / SL -25 (1:2 R:R), no breakeven/trailing
-- LOT_SIZE stays at 130 (2 lots × 65)
+- LOT_SIZE=195 (3 lots × 65)
 
 ### v2.1 (July 2026) - Two Trades
 - MAX_TRADES_PER_DAY raised to 2 (LOT_SIZE=130, 2 lots × 65)
