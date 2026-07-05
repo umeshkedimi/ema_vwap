@@ -8,25 +8,13 @@ Automated trading bot for Nifty options based on 5 EMA crossing VWAP on 5-minute
 - **BUY**: When 5 EMA crosses above VWAP → Buy CE (Call) option
 - **SELL**: When 5 EMA crosses below VWAP → Buy PE (Put) option
 
-**Exit Rules (Trailing SL):**
+**Exit Rules (Fixed Target/SL, 1:2 R:R):**
+- **Target**: +50 points from entry
 - **Stop Loss**: -25 points from entry
-- **Breakeven**: At +50 pts, SL moves to entry (0)
-- **Trailing SL**: At +75 pts, SL moves to +50, then trails every 5 pts (always 25 behind)
-- **No fixed target**: Winners run until trailing SL is hit
+- **No breakeven/trailing**: trade closes at target, SL, or force close - nothing in between
 - **Force Close**: 3:15 PM if still open
 
-```
-SL Progression:
-Entry → SL at -25
-+50 pts → SL moves to 0 (breakeven)
-+75 pts → SL moves to +50 (lock 50)
-+80 pts → SL moves to +55 (lock 55)
-+85 pts → SL moves to +60 (lock 60)
-+100 pts → SL moves to +75 (lock 75)
-... trails every 5 pts, always 25 behind
-```
-
-**Philosophy**: Cut losses early (-25), let winners run (trailing SL). Inspired by Tom Hougaard's "Best Loser Wins".
+**Philosophy**: One trade per day, fixed 1:2 risk:reward. Inspired by Tom Hougaard's "Best Loser Wins" - cut losses early, but wins are capped rather than left to run.
 
 ## Architecture
 
@@ -100,15 +88,16 @@ Edit `config.env`:
 ```env
 # Trading mode
 TRADING_ENABLED=true    # Enable/disable order execution
-PAPER_TRADING=false     # true = simulate orders, false = live trading
+PAPER_TRADING=true      # true = simulate orders, false = live trading
 
 # Trade timing
 TRADE_START_TIME=09:30  # No trades before this (skip first 15 min)
 TRADE_END_TIME=14:30    # No trades after this
 
 # Trade parameters
-MAX_TRADES_PER_DAY=2    # Max 2 trades per day
-STOPLOSS_POINTS=25      # Initial SL at -25 points
+MAX_TRADES_PER_DAY=1    # Max 1 trade per day
+TARGET_POINTS=50        # Fixed target at +50 points
+STOPLOSS_POINTS=25      # Fixed SL at -25 points
 LOT_SIZE=130            # Quantity (1 lot = 65)
 
 # Strike selection
@@ -121,10 +110,9 @@ ITM_OFFSET_FOR_DELTA=150  # ITM points for delta mode
 
 1. **Timing**: No trades before 9:30 AM or after 2:30 PM
 2. **One at a time**: Must close current trade before taking next signal
-3. **Daily limit**: Max 2 trades per day
-4. **Pre-10 AM block**: Only 1 trade allowed before 10:00 AM — if Trade 1 opens and closes before 10:00, Trade 2 must wait until after 10:00 AM
-5. **Second trade condition**: Trade 2 only fires if Trade 1 closed with SL hit or breakeven — if Trade 1 exits in profit, day ends
-6. **Expiry**: Weekly options (Tuesday expiry)
+3. **Daily limit**: Max 1 trade per day
+4. **Fixed exit**: Target +50, SL -25 (1:2 R:R), no breakeven/trailing
+5. **Expiry**: Weekly options (Tuesday expiry)
 
 ## Option Symbol Formats
 
@@ -171,12 +159,15 @@ The bot sends alerts for:
 - Every candle scan (EMA/VWAP values)
 - Signal detection
 - Trade entry with option details
-- Breakeven trigger (+50 pts)
-- Trailing SL updates (+75, +80, +85... every 5 pts)
-- Trade exit (trailing SL/SL/breakeven)
+- Trade exit (target/SL hit)
 - Daily summary
 
 ## Version History
+
+### v3.0 (July 2026) - Fixed Target, 1:2 R:R
+- Back to 1 trade per day, PAPER_TRADING=true
+- Fixed target +50 / SL -25 (1:2 R:R), no breakeven/trailing
+- LOT_SIZE stays at 130 (2 lots × 65)
 
 ### v2.1 (July 2026) - Two Trades
 - MAX_TRADES_PER_DAY raised to 2 (LOT_SIZE=130, 2 lots × 65)

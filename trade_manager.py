@@ -44,8 +44,6 @@ class Trade:
     pnl: float = 0.0
     order_id: Optional[str] = None
     exit_order_id: Optional[str] = None
-    sl_at_breakeven: bool = False
-    trailing_sl_level: int = 0
 
 
 @dataclass
@@ -54,14 +52,11 @@ class DailyState:
     date: date
     trades: list = field(default_factory=list)
     trades_executed: int = 0
-    first_trade_profit_exit: bool = False
     open_trade: Optional[Trade] = None
 
 
 class TradeManager:
     """Manages trade execution and rules enforcement using Kite Connect."""
-
-    BREAKEVEN_TRIGGER_POINTS = 50
 
     def __init__(self, kite_api, option_selector, telegram, config):
         self.kite = kite_api
@@ -109,14 +104,8 @@ class TradeManager:
         if self.daily_state.open_trade is not None:
             return False, "Trade already open - wait for exit"
 
-        if datetime.now().time() < time(10, 0) and self.daily_state.trades_executed >= 1:
-            return False, "Only 1 trade allowed before 10:00 AM"
-
         if self.daily_state.trades_executed >= self.config['max_trades_per_day']:
             return False, f"Max {self.config['max_trades_per_day']} trades reached for today"
-
-        if self.daily_state.first_trade_profit_exit:
-            return False, "First trade exited with profit - no more trades today"
 
         return True, "Trade allowed"
 
@@ -221,7 +210,7 @@ class TradeManager:
             return False
 
     def monitor_open_trade(self):
-        """Check open trade for SL hit, breakeven, and trailing SL."""
+        """Check open trade for target or SL hit."""
         if self.daily_state.open_trade is None:
             return
 
@@ -237,39 +226,15 @@ class TradeManager:
             return
 
         current_profit = current_price - trade.entry_price
-        logger.debug(f"Monitoring {trade.tradingsymbol}: LTP={current_price:.2f}, Profit={current_profit:.2f}, SL={trade.stoploss_price:.2f}")
+        logger.debug(f"Monitoring {trade.tradingsymbol}: LTP={current_price:.2f}, Profit={current_profit:.2f}, Target={trade.target_price:.2f}, SL={trade.stoploss_price:.2f}")
 
         if current_price <= trade.stoploss_price:
             self._close_trade(trade, current_price, TradeStatus.SL_HIT)
             return
 
-        if not trade.sl_at_breakeven and current_profit >= self.BREAKEVEN_TRIGGER_POINTS:
-            trade.stoploss_price = trade.entry_price
-            trade.sl_at_breakeven = True
-            logger.info(f"SL moved to breakeven: {trade.entry_price:.2f}")
-            self.telegram.send_message(
-                f"SL MOVED TO BREAKEVEN\n\n"
-                f"Option: NIFTY {trade.strike} {trade.option_type}\n"
-                f"LTP: {current_price:.2f} (+{self.BREAKEVEN_TRIGGER_POINTS:.0f} triggered)\n"
-                f"New SL: {trade.stoploss_price:.2f} (entry)\n"
-                f"Trailing starts at: +75 pts"
-            )
-
-        if current_profit >= 75:
-            new_trailing_level = int((current_profit // 5) * 5)
-            if new_trailing_level > trade.trailing_sl_level:
-                trade.trailing_sl_level = new_trailing_level
-                new_sl = trade.entry_price + (new_trailing_level - 25)
-                if new_sl > trade.stoploss_price:
-                    trade.stoploss_price = new_sl
-                    logger.info(f"Trailing SL moved to: {new_sl:.2f} (locking +{new_trailing_level - 25:.0f} pts)")
-                    self.telegram.send_message(
-                        f"TRAILING SL UPDATED\n\n"
-                        f"Option: NIFTY {trade.strike} {trade.option_type}\n"
-                        f"LTP: {current_price:.2f} (+{current_profit:.0f} pts)\n"
-                        f"New SL: {trade.stoploss_price:.2f} (locking +{new_trailing_level - 25:.0f} profit)\n"
-                        f"Next trail at: +{new_trailing_level + 5:.0f} pts"
-                    )
+        if current_price >= trade.target_price:
+            self._close_trade(trade, current_price, TradeStatus.TARGET_HIT)
+            return
 
     def _get_option_price(self, tradingsymbol: str) -> Optional[float]:
         """Get current price for an option using Kite API."""
@@ -298,9 +263,6 @@ class TradeManager:
         trade.exit_time = datetime.now()
         trade.status = status
         trade.pnl = (actual_exit_price - trade.entry_price) * trade.quantity
-
-        if trade.pnl > 0 and self.daily_state.trades_executed == 1:
-            self.daily_state.first_trade_profit_exit = True
 
         self._send_exit_notification(trade)
         self.daily_state.open_trade = None
@@ -354,13 +316,7 @@ class TradeManager:
         if self.daily_state.open_trade is not None:
             return False
 
-        if self.daily_state.first_trade_profit_exit:
-            return True
-
-        if self.daily_state.trades_executed >= self.config['max_trades_per_day']:
-            return True
-
-        return False
+        return self.daily_state.trades_executed >= self.config['max_trades_per_day']
 
     def get_status_message(self) -> str:
         """Get current bot status for heartbeat."""
@@ -371,20 +327,12 @@ class TradeManager:
             current_price = self._get_option_price(trade.tradingsymbol)
             if current_price:
                 unrealized_pnl = (current_price - trade.entry_price) * trade.quantity
-                current_profit = current_price - trade.entry_price
                 pnl_sign = "+" if unrealized_pnl >= 0 else ""
-                if trade.trailing_sl_level > 0:
-                    next_trail = trade.trailing_sl_level + 5
-                    trail_info = f"Trail: +{next_trail:.0f}"
-                elif trade.sl_at_breakeven:
-                    trail_info = "Trail: +75"
-                else:
-                    trail_info = "BE: +50"
                 return (
                     f"Status [{now}]\n"
                     f"OPEN: {trade.strike} {trade.option_type}\n"
                     f"Entry: {trade.entry_price:.2f} | LTP: {current_price:.2f}\n"
-                    f"SL: {trade.stoploss_price:.2f} | {trail_info}\n"
+                    f"Target: {trade.target_price:.2f} | SL: {trade.stoploss_price:.2f}\n"
                     f"Unrealized: {pnl_sign}{unrealized_pnl:.2f}"
                 )
             else:
@@ -433,16 +381,14 @@ class TradeManager:
     def _send_entry_notification(self, trade: Trade):
         """Send Telegram notification for trade entry."""
         mode = "PAPER" if self.config['paper_trading'] else "LIVE"
-        trade_num = self.daily_state.trades_executed
 
         message = (
-            f"{'BUY' if trade.signal_type == 'BUY' else 'SELL'} TRADE EXECUTED (#{trade_num}/{self.config['max_trades_per_day']})\n\n"
+            f"{'BUY' if trade.signal_type == 'BUY' else 'SELL'} TRADE EXECUTED\n\n"
             f"Option: NIFTY {trade.strike} {trade.option_type}\n"
             f"Symbol: {trade.tradingsymbol}\n"
             f"Entry: {trade.entry_price:.2f}\n"
+            f"Target: {trade.target_price:.2f} (+{self.config['target_points']})\n"
             f"SL: {trade.stoploss_price:.2f} (-{self.config['stoploss_points']})\n"
-            f"BE Trigger: +{self.BREAKEVEN_TRIGGER_POINTS} pts\n"
-            f"Trail starts: +75 pts (then every 5)\n"
             f"Qty: {trade.quantity}\n\n"
             f"Mode: {mode}"
         )
@@ -450,13 +396,10 @@ class TradeManager:
 
     def _send_exit_notification(self, trade: Trade):
         """Send Telegram notification for trade exit."""
-        if trade.status == TradeStatus.SL_HIT:
-            if trade.trailing_sl_level > 0:
-                emoji = "TRAILING SL HIT"
-            elif trade.sl_at_breakeven:
-                emoji = "BREAKEVEN EXIT"
-            else:
-                emoji = "STOPLOSS HIT"
+        if trade.status == TradeStatus.TARGET_HIT:
+            emoji = "TARGET HIT"
+        elif trade.status == TradeStatus.SL_HIT:
+            emoji = "STOPLOSS HIT"
         else:
             emoji = "TRADE CLOSED"
 
@@ -468,13 +411,8 @@ class TradeManager:
             f"Option: NIFTY {trade.strike} {trade.option_type}\n"
             f"Entry: {trade.entry_price:.2f}\n"
             f"Exit: {trade.exit_price:.2f}\n"
-            f"P&L: {pnl_sign}{trade.pnl:.2f} ({points:+.2f} x {trade.quantity})\n"
+            f"P&L: {pnl_sign}{trade.pnl:.2f} ({points:+.2f} x {trade.quantity})"
         )
-
-        if trade.pnl > 0 and self.daily_state.trades_executed == 1:
-            message += "\nNo more trades today (profit exit)"
-        elif trade.pnl <= 0 and self.daily_state.trades_executed < self.config['max_trades_per_day']:
-            message += f"\n{self.config['max_trades_per_day'] - self.daily_state.trades_executed} trade(s) remaining"
 
         self.telegram.send_message(message)
 
