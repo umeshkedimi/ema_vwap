@@ -5,7 +5,6 @@ Handles trade execution, rules enforcement, and position monitoring.
 Uses Kite Connect API for order execution.
 """
 
-import os
 import logging
 import uuid
 from datetime import datetime, date, time

@@ -61,27 +61,6 @@ class KiteAPI:
             logger.error(f"Kite LTP request failed: {e}")
             return {}
 
-    def get_quote(self, symbols: list) -> dict:
-        """
-        Get full quote for symbols.
-        Returns more details including OHLC, volume, etc.
-        """
-        url = f"{self.BASE_URL}/quote"
-        params = [("i", sym) for sym in symbols]
-
-        try:
-            response = requests.get(url, headers=self.headers, params=params)
-            result = response.json()
-
-            if result.get("status") == "success":
-                return result.get("data", {})
-            else:
-                logger.error(f"Kite quote error: {result}")
-                return {}
-        except Exception as e:
-            logger.error(f"Kite quote request failed: {e}")
-            return {}
-
     def place_order(
         self,
         tradingsymbol: str,
@@ -150,46 +129,6 @@ class KiteAPI:
         except Exception as e:
             logger.error(f"Order request failed: {e}")
             return {"status": "error", "message": str(e)}
-
-    def get_positions(self) -> dict:
-        """
-        Get all positions.
-        Returns: {"net": [...], "day": [...]}
-        """
-        url = f"{self.BASE_URL}/portfolio/positions"
-
-        try:
-            response = requests.get(url, headers=self.headers)
-            result = response.json()
-
-            if result.get("status") == "success":
-                return result.get("data", {})
-            else:
-                logger.error(f"Positions error: {result}")
-                return {}
-        except Exception as e:
-            logger.error(f"Positions request failed: {e}")
-            return {}
-
-    def get_orders(self) -> list:
-        """
-        Get all orders for the day.
-        Returns: List of orders
-        """
-        url = f"{self.BASE_URL}/orders"
-
-        try:
-            response = requests.get(url, headers=self.headers)
-            result = response.json()
-
-            if result.get("status") == "success":
-                return result.get("data", [])
-            else:
-                logger.error(f"Orders error: {result}")
-                return []
-        except Exception as e:
-            logger.error(f"Orders request failed: {e}")
-            return []
 
     def get_order_history(self, order_id: str) -> list:
         """

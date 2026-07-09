@@ -161,20 +161,6 @@ class FyersAPI:
         res = requests.get(url, headers=self.headers, params=params)
         return res.json()
 
-    def get_quotes(self, symbols):
-        """Get real-time quotes for symbols."""
-        url = f"{self.BASE_URL}/quotes"
-        symbol_str = ",".join(symbols) if isinstance(symbols, list) else symbols
-        params = {"symbols": symbol_str}
-        res = requests.get(url, headers=self.headers, params=params)
-        return res.json()
-
-    def place_order(self, order_data):
-        """Place an order."""
-        url = f"{self.BASE_URL}/orders/sync"
-        res = requests.post(url, headers=self.headers, json=order_data)
-        return res.json()
-
 
 class TelegramNotifier:
     """Sends notifications via Telegram."""
@@ -285,46 +271,6 @@ class VWAPEMASignalBot:
 
         return df_today
 
-    def check_crossover(self, df):
-        """Check for EMA/VWAP crossover and return signal if detected."""
-        if len(df) < 2:
-            return None
-
-        current = df.iloc[-1]
-        previous = df.iloc[-2]
-
-        current_ema = current['ema']
-        current_vwap = current['vwap']
-        previous_ema = previous['ema']
-        previous_vwap = previous['vwap']
-
-        current_ema_above_vwap = current_ema > current_vwap
-        previous_ema_above_vwap = previous_ema > previous_vwap
-
-        signal = None
-
-        if not previous_ema_above_vwap and current_ema_above_vwap:
-            signal = {
-                'type': 'BUY',
-                'price': current['close'],
-                'ema': current_ema,
-                'vwap': current_vwap,
-                'time': current['datetime']
-            }
-            logger.info(f"BUY signal detected at {current['datetime']}")
-
-        elif previous_ema_above_vwap and not current_ema_above_vwap:
-            signal = {
-                'type': 'SELL',
-                'price': current['close'],
-                'ema': current_ema,
-                'vwap': current_vwap,
-                'time': current['datetime']
-            }
-            logger.info(f"SELL signal detected at {current['datetime']}")
-
-        return signal
-
     def format_signal_message(self, signal):
         """Format the signal for Telegram."""
         emoji = "🟢" if signal['type'] == 'BUY' else "🔴"
@@ -414,19 +360,6 @@ class VWAPEMASignalBot:
         else:
             logger.info("No crossover detected")
 
-    def get_next_5min_mark(self):
-        """Calculate the next 5-minute candle close time."""
-        now = datetime.now()
-        minutes = now.minute
-        next_5min = (minutes // 5 + 1) * 5
-
-        if next_5min >= 60:
-            next_time = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
-        else:
-            next_time = now.replace(minute=next_5min, second=0, microsecond=0)
-
-        return next_time
-
     def is_market_hours(self, start_time_str, end_time_str):
         """Check if current time is within market hours."""
         now = datetime.now()
@@ -448,8 +381,8 @@ class VWAPEMASignalBot:
             trading_info = (
                 f"\n\nTrading: ENABLED ({mode})\n"
                 f"Max Trades: {self.trade_manager.config['max_trades_per_day']}/day\n"
-                f"SL: -{self.trade_manager.config['stoploss_points']} pts\n"
-                f"Trail: +75 pts (then every 25)"
+                f"Target: +{self.trade_manager.config['target_points']} pts\n"
+                f"SL: -{self.trade_manager.config['stoploss_points']} pts"
             )
         else:
             trading_info = "\n\nTrading: DISABLED (signals only)"
