@@ -37,7 +37,7 @@ Findings from running the bot live (paper) and backtesting the trade log. Full d
 
 **Crossover strength has no predictive edge — so I didn't add a filter for it.** It was tempting to filter out "thin" EMA/VWAP crossovers after a losing streak, but the data refuted it: correlation between crossover separation and outcome was −0.03, and the three *widest* crossovers in the sample all lost. Threshold sweeps swung wildly on the small sample (classic overfitting), so the filter was rejected.
 
-**The one real edge is time of day.** Entries before 10:00 AM were the money pit (−157 pts over 13 trades) — VWAP is still forming on the opening candles, making the early crossover unreliable. Blocking entries before 10:00 lifts net performance from +101 → +258 pts at the cost of only two small winners. This became the single data-supported change (`TRADE_START_TIME=10:00`).
+**Time of day looked like an edge, but live results didn't hold up.** Entries before 10:00 AM were the money pit in the initial backtest (−157 pts over 13 trades), so `TRADE_START_TIME` was pushed to 10:00 on Jun 16. The post-implementation tally told a different story: the filter blocked 3 would-be wins against only 1 avoided loss, so it was reverted back to `TRADE_START_TIME=09:30` on Jun 27. The backtest isn't refuted — the before-10:00 window may still underperform over a larger sample — but the small live sample didn't support keeping the filter. See [`LEARNINGS.md`](LEARNINGS.md) §7b for the full tally.
 
 **Points-positive but rupees-negative pointed to position sizing as the bigger lever.** The sample was +101 pts yet −₹23k, because size was largest during a drawdown. The signal wasn't the main problem — risk sizing was.
 
@@ -59,7 +59,7 @@ cp config.example.env config.env
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install requests pandas numpy
+pip install requests pandas python-dotenv
 ```
 
 ### 3. API Credentials Required
