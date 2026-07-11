@@ -492,7 +492,6 @@ def main():
 
     trading_enabled = os.getenv('TRADING_ENABLED', 'false').lower() == 'true'
     kite_api_key = os.getenv('KITE_API_KEY')
-    kite_access_token_env = os.getenv('KITE_ACCESS_TOKEN')
 
     if trading_enabled:
         from kite_api import KiteAPI
